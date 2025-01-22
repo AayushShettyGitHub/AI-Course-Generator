@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const { uploadImageToCloudinary } = require('../Controller/cloudinary');  // Import the utility
 
-// Define the User schema
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -19,24 +19,21 @@ const UserSchema = new mongoose.Schema({
     minlength: [6, 'Password must be at least 6 characters long'],
   },
   googleId: {
-    type: String, // Used for Google-authenticated users
+    type: String,
   },
   profileImage: {
-    type: String, // Stores the Google profile image or custom avatar
-    default: 'https://example.com/default-avatar.png',
+    type: String,
+    default: '',
   },
   age: {
     type: Number,
-    required: [true, 'Age is required'],
-    min: [13, 'You must be at least 13 years old to sign up'],
+    min: [18, 'You must be at least 18 years old to sign up'],
   },
 }, {
-  timestamps: true, // Automatically adds createdAt and updatedAt fields
+  timestamps: true,
 });
 
-// Pre-save middleware for hashing passwords
 UserSchema.pre('save', async function (next) {
-  // Only hash the password if it is new or modified
   if (this.password && this.isModified('password')) {
     try {
       const salt = await bcrypt.genSalt(10);
@@ -48,11 +45,20 @@ UserSchema.pre('save', async function (next) {
   next();
 });
 
-// Method to compare password for login
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Export the User model
-const User = mongoose.model('User', UserSchema);
-module.exports = User;
+UserSchema.methods.uploadProfileImage = async function (imagePath) {
+  try {
+    const result = await uploadImageToCloudinary(imagePath);  // Using the utility
+    this.profileImage = result;  // Setting Cloudinary URL
+    await this.save();
+    return this.profileImage;
+  } catch (error) {
+    console.error('Cloudinary Upload Error:', error); //check cloudinary ke liye used
+    throw new Error('Image upload failed');
+  }
+};
+
+module.exports = mongoose.model('User', UserSchema);

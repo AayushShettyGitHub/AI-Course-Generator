@@ -1,20 +1,26 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const databaseConnect = require('./config/database'); 
+const cookieParser = require('cookie-parser');
+const connectToDatabase= require('./config/database.js'); 
+const authRoutes=require('./routes/verify')
 
 const server = express();
-console.log('JWT_SECRET:', process.env.JWT_SECRET);
-console.log('MONGO_URI:', process.env.connect_string);
-server.use(cors());
-server.use(express.json());
-// Use routes
-server.get('/', (req, res) => res.send('Server is running'));
-server.use('/api/verify', require('./routes/verify'));
+server.use(express.json({ limit: '10mb' }));
+server.use(cookieParser());
+server.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+
+server.use('/api/auth',authRoutes) ;
 
 
 
-const port = process.env.PORT || 8082;
+const port = process.env.PORT || 5000;
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);
+  connectToDatabase();
 });

@@ -1,0 +1,94 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios"; // Importing axios
+import Cookies from "js-cookie"; // Importing js-cookie
+
+function SignIn({ toggleAuthMode }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    setError(""); // Clear previous errors
+
+    try {
+      // Sending the login request to the backend
+      const response = await axios.post(
+        "http://localhost:8082/api/auth/login", // Adjust the URL based on your API
+        { email, password },
+        { withCredentials: true } // Include cookies in the request
+      );
+
+      console.log("Login successful:", response.data);
+      Cookies.set("jwt", response.data.token, { expires: 7 }); // Token expires in 7 days
+      // After successful login, navigate to the protected page
+      console.log("JWT Cookie after setting:", Cookies.get("jwt"));
+      navigate("/homepage");
+    } catch (error) {
+      // Handle different error scenarios more gracefully
+      const errorMessage = error.response?.data?.message || error.message || "An error occurred. Please try again.";
+      console.error("Error during login:", errorMessage);
+      setError(errorMessage);
+    }
+  };
+
+  return (
+    <div className="hero bg-base-200 min-h-screen">
+      <div className="hero-content flex-col lg:flex-row-reverse">
+        <div className="text-center lg:text-left">
+          <h1 className="text-5xl font-bold px-20">Login now!</h1>
+          <p className="py-6 px-16 text-lg max-w-45">
+            Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda
+            excepturi exercitationem quasi. In deleniti eaque aut repudiandae et
+            a id nisi.
+          </p>
+        </div>
+        <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
+          <form className="card-body" onSubmit={handleSignIn}>
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Email</span>
+              </label>
+              <input
+                type="email"
+                placeholder="email"
+                className="input input-bordered"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Password</span>
+              </label>
+              <input
+                type="password"
+                placeholder="password"
+                className="input input-bordered"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            {error && (
+              <div className="text-red-500 text-sm mt-2">{error}</div>
+            )}
+            <div className="form-control mt-6">
+              <button type="submit" className="btn btn-primary">
+                Login
+              </button>
+            </div>
+          </form>
+          <button className="btn btn-link mt-4" onClick={toggleAuthMode}>
+            Don't have an account? Sign Up
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default SignIn;
