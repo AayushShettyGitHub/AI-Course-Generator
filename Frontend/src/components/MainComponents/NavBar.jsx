@@ -3,8 +3,8 @@ import Cookies from 'js-cookie';
 import { Link, useNavigate } from 'react-router-dom';
 
 function NavBar() {
+  const navigate = useNavigate();
   const [updatedUser, setUpdatedUser] = useState(null);
-  const navigate = useNavigate(); // Initialize the navigate function
 
   const decodeJWT = (token) => {
     const payload = token.split('.')[1];
@@ -27,7 +27,7 @@ function NavBar() {
         const userId = decodedToken?.userId;
 
         if (userId) {
-          fetch(`http://localhost:8082/api/auth/getUser?id=${userId}`)
+          fetch(`http://localhost:8082/api/getUser?id=${userId}`)
             .then((response) => response.json())
             .then((data) => {
               if (data) {
@@ -45,7 +45,7 @@ function NavBar() {
   }, []);
 
   return (
-    <div className="navbar bg-base-100">
+    <div className="navbar bg-base-100 z-[50] w-full fixed top-0 shadow-md">
       {/* Drawer Toggle */}
       <div className="drawer drawer-end">
         <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
@@ -71,12 +71,12 @@ function NavBar() {
             </svg>
           </label>
           {/* Header Title */}
-          <a className="btn btn-ghost text-xl">daisyUI</a>
+          <a className="btn btn-ghost text-xl">CoursiFY</a>
 
           {/* Navigation Menu (Visible only on larger screens) */}
           <div className="navbar-center hidden lg:flex flex-1 justify-center">
             <ul className="menu menu-horizontal px-1">
-              <li><a>Item 1</a></li>
+              <li><button onClick={() => navigate("/homepage")}>Home</button></li>
               <li>
                 <details>
                   <summary>Parent</summary>
@@ -86,17 +86,17 @@ function NavBar() {
                   </ul>
                 </details>
               </li>
-              <li><a>Item 3</a></li>
+              <li><button onClick={() => navigate("/generatepage")}>Generate</button></li>
             </ul>
           </div>
         </div>
 
         {/* Drawer Sidebar */}
-        <div className="drawer-side">
+        <div className="drawer-side z-[50]">
           <label htmlFor="my-drawer-4" className="drawer-overlay"></label>
-          <ul className="menu bg-base-200 text-base-content min-h-full w-80 p-4">
+          <ul className="menu bg-base-200 text-base-content w-80 p-4">
             {/* Sidebar Navigation Items */}
-            <li><a>Item 1</a></li>
+            <li><button onClick={() => navigate("/homepage")}>Home</button></li>
             <li>
               <details>
                 <summary>Parent</summary>
@@ -106,7 +106,7 @@ function NavBar() {
                 </ul>
               </details>
             </li>
-            <li><a>Item 3</a></li>
+            <li><button onClick={() => navigate("/generatepage")}>Generate</button></li>
           </ul>
         </div>
       </div>
@@ -128,7 +128,7 @@ function NavBar() {
           </div>
           <ul
             tabIndex={0}
-            className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
+            className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[50] mt-3 w-52 p-2 shadow"
           >
             <li>
               <Link to="/profilepage" className="justify-between">

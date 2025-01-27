@@ -42,7 +42,7 @@ const ProfileEdit = ({ user, onCancel }) => {
       };
       console.log("Data to send:", dataToSend);
 
-      const response = await axios.post("http://localhost:8082/api/auth/update", dataToSend, {
+      const response = await axios.post("http://localhost:8082/api/update", dataToSend, {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json',

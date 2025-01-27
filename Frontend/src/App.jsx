@@ -5,6 +5,7 @@ import Homepage from "./components/Pages/Homepage.jsx"; // Import your Homepage 
 import ProtectedRoute from "./utils/ProtectedRoutes.jsx";
 import ProfileSwitch from "./components/MainComponents/ProfileSwitch.jsx";
 import { Navigate } from "react-router-dom";
+import CourseGenerator from "./components/Pages/CourseGenerator.jsx";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/homepage" element={<Homepage />} />
           <Route path="/profilepage" element={<ProfileSwitch />} />
+          <Route path="/generatepage" element={<CourseGenerator />} />
         </Route>
       </Routes>
     </Router>

@@ -17,10 +17,10 @@ function SignUp({ toggleAuthMode }) {
   const handleSignUp = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:8082/api/auth/register", formData);
+      const response = await axios.post("http://localhost:8082/api/register", formData);
       console.log("User signed up successfully!", response.data);
 
-      // Switch to SignIn after successful registration
+     
       toggleAuthMode();
     } catch (err) {
       console.error("Sign-up failed:", err.response?.data || err.message);

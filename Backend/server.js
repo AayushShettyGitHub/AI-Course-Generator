@@ -15,7 +15,7 @@ server.use(
   })
 );
 
-server.use('/api/auth',authRoutes) ;
+server.use('/api',authRoutes) ;
 
 
 

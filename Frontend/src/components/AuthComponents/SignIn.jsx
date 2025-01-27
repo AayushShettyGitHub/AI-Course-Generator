@@ -16,7 +16,7 @@ function SignIn({ toggleAuthMode }) {
     try {
       // Sending the login request to the backend
       const response = await axios.post(
-        "http://localhost:8082/api/auth/login", // Adjust the URL based on your API
+        "http://localhost:8082/api/login", // Adjust the URL based on your API
         { email, password },
         { withCredentials: true } // Include cookies in the request
       );
