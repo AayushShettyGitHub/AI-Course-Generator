@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
 function Hero() {
-  const navigate = useNavigate(); // Initialize the navigate function
+  const navigate = useNavigate(); 
 
   return (
     <div className="hero bg-base-200 min-h-screen">

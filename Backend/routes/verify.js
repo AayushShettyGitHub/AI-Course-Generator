@@ -3,6 +3,7 @@ const express = require('express');
 const { registerUser,updateUser, loginUser, googleSignIn ,logout} = require('../Controller/setup');
 const{getData} = require('../Controller/getData')
 const { generateLayout } = require("../services/AiModel");
+const{saveCourse} = require('../Controller/courseStore')
 const router = express.Router();
 
 
@@ -18,5 +19,6 @@ router.post('/login', loginUser);
 router.post('/logout', logout);
 router.post('/google', googleSignIn);
 router.post('/geminiLayout', generateLayout);
+router.post("/saveCourse",saveCourse)
 
 module.exports = router;

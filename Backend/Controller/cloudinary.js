@@ -12,7 +12,7 @@ const uploadImageToCloudinary = async (imagePath) => {
     const result = await cloudinary.uploader.upload(imagePath, {
       folder: 'avatars',
     });
-    return result.secure_url;  // Return the Cloudinary image URL
+    return result.secure_url;  
   } catch (error) {
     console.error('Cloudinary Upload Error:', error);
     throw new Error('Image upload failed');

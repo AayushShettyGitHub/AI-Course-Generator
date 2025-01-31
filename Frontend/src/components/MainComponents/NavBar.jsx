@@ -13,9 +13,9 @@ function NavBar() {
   };
 
   const handleLogout = () => {
-    Cookies.remove("jwt"); // Remove the cookie
+    Cookies.remove("jwt"); 
     console.log("User logged out successfully");
-    navigate("/login"); // Redirect to login page
+    navigate("/login"); 
   };
 
   useEffect(() => {
@@ -46,11 +46,11 @@ function NavBar() {
 
   return (
     <div className="navbar bg-base-100 z-[50] w-full fixed top-0 shadow-md">
-      {/* Drawer Toggle */}
+     
       <div className="drawer drawer-end">
         <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
         <div className="drawer-content flex items-center">
-          {/* Hamburger Icon for Drawer (Visible only on smaller screens) */}
+       
           <label
             htmlFor="my-drawer-4"
             className="drawer-button btn btn-ghost lg:hidden mr-2"
@@ -70,10 +70,10 @@ function NavBar() {
               />
             </svg>
           </label>
-          {/* Header Title */}
+        
           <a className="btn btn-ghost text-xl">CoursiFY</a>
 
-          {/* Navigation Menu (Visible only on larger screens) */}
+         
           <div className="navbar-center hidden lg:flex flex-1 justify-center">
             <ul className="menu menu-horizontal px-1">
               <li><button onClick={() => navigate("/homepage")}>Home</button></li>
@@ -91,11 +91,11 @@ function NavBar() {
           </div>
         </div>
 
-        {/* Drawer Sidebar */}
+      
         <div className="drawer-side z-[50]">
           <label htmlFor="my-drawer-4" className="drawer-overlay"></label>
           <ul className="menu bg-base-200 text-base-content w-80 p-4">
-            {/* Sidebar Navigation Items */}
+        
             <li><button onClick={() => navigate("/homepage")}>Home</button></li>
             <li>
               <details>
@@ -111,7 +111,6 @@ function NavBar() {
         </div>
       </div>
 
-      {/* Navbar Right Side */}
       <div className="flex-none gap-2">
         <div className="dropdown dropdown-end">
           <div

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import ProfilePage from './ProfilePage';  // Import ProfilePage correctly
-import ProfileEdit from './ProfileEdit';  // Import ProfileEdit correctly
+import ProfilePage from './ProfilePage';  
+import ProfileEdit from './ProfileEdit';  
 
 const ProfileSwitch = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -45,7 +45,7 @@ const ProfileSwitch = () => {
     }
   }, [isEditing]);
 
-  // Show loading state until data is fetched
+ 
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -53,12 +53,12 @@ const ProfileSwitch = () => {
   return isEditing ? (
     <ProfileEdit
       user={updatedUser}
-      onCancel={() => setIsEditing(false)}  // Just stop editing without passing anything back
+      onCancel={() => setIsEditing(false)} 
     />
   ) : (
     <ProfilePage
       user={updatedUser}
-      onEdit={() => setIsEditing(true)}  // Switch to editing mode
+      onEdit={() => setIsEditing(true)} 
     />
   );
 };

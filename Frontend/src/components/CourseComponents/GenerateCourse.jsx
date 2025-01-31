@@ -34,8 +34,9 @@ function GenerateCourse({ onGenerate }) {
       console.log("Request Data:", formData);
    
       const response = await axios.post("http://localhost:8082/api/geminiLayout", formData);
+      localStorage.setItem("courseData", JSON.stringify(response.data));
       console.log("Response:", response.data);
-      onGenerate();  // Trigger the layout rendering once the generation is complete
+      onGenerate();  
     } catch (error) {
       console.error("Error generating course:", error);
     }
@@ -44,7 +45,7 @@ function GenerateCourse({ onGenerate }) {
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 container mx-auto px-4 py-6 pt-28">
-        {/* Steps Navigation */}
+       
         <div className="flex justify-center mb-10">
           <ul className="steps steps-horizontal lg:steps-horizontal w-full max-w-3xl">
             <li className={`step ${step >= 0 ? "step-primary" : ""}`}>Category</li>
@@ -53,7 +54,7 @@ function GenerateCourse({ onGenerate }) {
           </ul>
         </div>
 
-        {/* Form Section */}
+        
         <form className="bg-gray-100 p-6 rounded-lg shadow-md">
           {step === 0 && (
             <div>
@@ -135,7 +136,7 @@ function GenerateCourse({ onGenerate }) {
           )}
         </form>
 
-        {/* Navigation Buttons */}
+       
         <div className="flex justify-between mt-6">
           <button
             className={`btn btn-primary ${step === 0 ? "opacity-50 cursor-not-allowed" : ""}`}

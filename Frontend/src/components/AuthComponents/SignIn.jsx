@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // Importing axios
-import Cookies from "js-cookie"; // Importing js-cookie
+import axios from "axios"; 
+import Cookies from "js-cookie"; 
 
 function SignIn({ toggleAuthMode }) {
   const [email, setEmail] = useState("");
@@ -11,23 +11,23 @@ function SignIn({ toggleAuthMode }) {
 
   const handleSignIn = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
+    setError(""); 
 
     try {
-      // Sending the login request to the backend
+    
       const response = await axios.post(
-        "http://localhost:8082/api/login", // Adjust the URL based on your API
+        "http://localhost:8082/api/login", 
         { email, password },
-        { withCredentials: true } // Include cookies in the request
+        { withCredentials: true } 
       );
 
       console.log("Login successful:", response.data);
-      Cookies.set("jwt", response.data.token, { expires: 7 }); // Token expires in 7 days
-      // After successful login, navigate to the protected page
+      Cookies.set("jwt", response.data.token, { expires: 7 }); 
+     
       console.log("JWT Cookie after setting:", Cookies.get("jwt"));
       navigate("/homepage");
     } catch (error) {
-      // Handle different error scenarios more gracefully
+     
       const errorMessage = error.response?.data?.message || error.message || "An error occurred. Please try again.";
       console.error("Error during login:", errorMessage);
       setError(errorMessage);

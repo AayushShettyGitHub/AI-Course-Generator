@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const { uploadImageToCloudinary } = require('../Controller/cloudinary');  // Import the utility
-
+const { uploadImageToCloudinary } = require('../Controller/cloudinary'); 
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -51,8 +50,8 @@ UserSchema.methods.matchPassword = async function (enteredPassword) {
 
 UserSchema.methods.uploadProfileImage = async function (imagePath) {
   try {
-    const result = await uploadImageToCloudinary(imagePath);  // Using the utility
-    this.profileImage = result;  // Setting Cloudinary URL
+    const result = await uploadImageToCloudinary(imagePath);  
+    this.profileImage = result; 
     await this.save();
     return this.profileImage;
   } catch (error) {

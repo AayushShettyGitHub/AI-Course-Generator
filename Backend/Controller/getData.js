@@ -2,21 +2,21 @@ const mongoose = require('mongoose');
 const Schema = require('../models/schema');
 
 exports.getData = async (req, res) => {
-    const { id } = req.query;  // Get id from query params (assumed to be MongoDB ObjectId)
+    const { id } = req.query; 
     
-    // Ensure that the id is a valid MongoDB ObjectId
+  
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).send({ message: 'Invalid user ID' });
     }
 
     try {
-        const user = await Schema.findById(id);  // Use findById to search by MongoDB ObjectId
+        const user = await Schema.findById(id);
         if (!user) {
             return res.status(404).send({ message: 'User not found' });
         }
-        res.json(user);  // Return the user data
+        res.json(user); 
     } catch (error) {
-        console.error(error);  // Log error to help debugging
+        console.error(error); 
         res.status(500).send({ message: 'Error fetching user data' });
     }
 };

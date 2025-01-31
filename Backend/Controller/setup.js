@@ -34,13 +34,12 @@ exports.registerUser = async (req, res) => {
       imageUrl = await uploadImageToCloudinary(profileImage);
     }
 
-    // Create a new user instance with the uploaded image
     const user = new Schema({ name, email, password });
 
-    // Save the new user to the database (hashing happens automatically via pre-save middleware)
+
     await user.save();
 
-    // Generate a JWT token
+ 
     const token = generateToken(user._id, res);
 
     res.status(201).json({
@@ -69,7 +68,7 @@ exports.registerUser = async (req, res) => {
  exports.updateUser = async (req, res) => {
   const { name, email, age, profileImage } = req.body;
   try {
-    // Check if the user exists in the database by their email
+    
     const user = await Schema.findOne({ email });
 
     if (!user) {
@@ -79,7 +78,7 @@ exports.registerUser = async (req, res) => {
     if (name) user.name = name;
     if (age) user.age = age;
 
-    // Handle profile image upload if provided
+   
     if (profileImage) {
       try {
         const uploadedImageUrl = await uploadImageToCloudinary(profileImage);
@@ -89,7 +88,7 @@ exports.registerUser = async (req, res) => {
       }
     }
 
-    // Save the updated user document to the database
+  
     await user.save();
 
     res.status(200).json({
@@ -162,11 +161,10 @@ exports.googleSignIn = async (req, res) => {
     const payload = ticket.getPayload();
     const { name, email, picture } = payload;
 
-    // Check if the user already exists
     let user = await Schema.findOne({ email });
 
     if (!user) {
-      // Create a new user for Google Sign-In
+      
       const newUser = new Schema({
         name,
         email,
@@ -174,7 +172,7 @@ exports.googleSignIn = async (req, res) => {
         profileImage: picture,
       });
 
-      user = await newUser.save(); // Save the new user
+      user = await newUser.save(); 
     }
 
     

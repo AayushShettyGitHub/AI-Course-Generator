@@ -3,7 +3,7 @@ import axios from "axios";
 
 const ProfileEdit = ({ user, onCancel }) => {
   const [formData, setFormData] = useState({
-    profileImage: user?.profileImage || "", // Fallback to empty string if no value
+    profileImage: user?.profileImage || "", 
     name: user?.name || "",
     age: user?.age || "",
   });
@@ -25,7 +25,7 @@ const ProfileEdit = ({ user, onCancel }) => {
       reader.onload = () => {
         setFormData((prev) => ({
           ...prev,
-          profileImage: reader.result, // Base64 string
+          profileImage: reader.result, 
         }));
       };
       reader.readAsDataURL(file);
@@ -38,7 +38,7 @@ const ProfileEdit = ({ user, onCancel }) => {
     try {
       const dataToSend = {
         ...formData,
-        email: user?.email, // Include the email for identification
+        email: user?.email, 
       };
       console.log("Data to send:", dataToSend);
 
@@ -52,7 +52,7 @@ const ProfileEdit = ({ user, onCancel }) => {
       console.log("Response status:", response.data);
       if (response.status === 200) {
         alert('Profile updated successfully');
-        onCancel();  // This will hide the edit form and go back to profile page
+        onCancel();  
       }
     } catch (error) {
       console.error("Error updating profile:", error);
