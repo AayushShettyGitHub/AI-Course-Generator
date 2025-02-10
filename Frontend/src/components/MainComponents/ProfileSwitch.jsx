@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import ProfilePage from './ProfilePage';  
-import ProfileEdit from './ProfileEdit';  
+import ProfileEdit from './ProfileEdit'; 
+import NavBar from './NavBar'; 
 
 const ProfileSwitch = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -56,10 +57,13 @@ const ProfileSwitch = () => {
       onCancel={() => setIsEditing(false)} 
     />
   ) : (
+    <>
+    <NavBar />
     <ProfilePage
       user={updatedUser}
       onEdit={() => setIsEditing(true)} 
     />
+    </>
   );
 };
 

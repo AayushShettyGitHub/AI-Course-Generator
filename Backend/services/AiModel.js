@@ -73,4 +73,61 @@ Please ensure that:
   }
 };
 
+exports.generateContent = async (req, res) => {
+  try {
+    const { chapter } = req.body;
+
+    if (!chapter) {
+      return res.status(400).json({ message: "Please provide a chapter to generate content" });
+    }
+
+    const prompt = `
+      Provide a **highly detailed** and **comprehensive** explanation for the topic:  
+      **Chapter: ${chapter.chapterName}**.  
+      
+      The core concept is:  
+      **${chapter.content}**  
+      
+      The response should:
+      - Explain the topic **from fundamental principles to advanced concepts**.
+      - Include **historical context, real-world applications, and use cases**.
+      - Provide **technical details, mathematical formulations (if applicable), and step-by-step explanations**.
+      - Break down complex topics into **clear, structured sections**.
+      - **Compare** this concept with similar or related concepts.
+      - If applicable, include **common misconceptions, pitfalls, and best practices**.
+      - Use simple analogies when necessary to enhance understanding.
+      - If code examples are relevant, provide **fully functional** and **well-documented** code snippets.
+      - Ensure examples include **expected outputs**.
+      
+      **Response Format:**  
+      Return the response **strictly in JSON format** as an array of objects,  
+      where each object contains the following fields:
+      - **title** (A clear section title)
+      - **explanation** (A thorough and in-depth explanation)
+      - **code** (If applicable, provide fully formatted code, without using <precode> tags)
+    `;
+
+    const result = await model.generateContent(prompt);
+    responseText = await result.response.text();
+    
+    responseText = responseText.replace(/```json|```|`/g, '').trim();
+    console.log(responseText);
+
+    let content;
+    try {
+      content = JSON.parse(responseText);
+      console.log(content);
+    } catch (parseError) {
+      console.error("Error parsing AI model response:", parseError);
+      return res.status(500).json({ message: "Failed to parse generated content", error: parseError.message });
+    }
+
+    res.status(200).json({ content });
+  } catch (error) {
+    console.error("Error generating content:", error);
+    res.status(500).json({ message: "Failed to generate content", error: error.message });
+  }
+};
+
+
 

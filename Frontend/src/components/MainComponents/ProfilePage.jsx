@@ -4,7 +4,7 @@ const ProfilePage = ({ user, onEdit }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-gray-100 p-6 pt-20">
      
       <div className="bg-white shadow-lg rounded-lg p-8 flex flex-col lg:flex-row items-center lg:items-start lg:space-x-8">
         

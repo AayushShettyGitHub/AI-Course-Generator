@@ -16,7 +16,12 @@ const Layout = () => {
   const saveCourse = async () => {
     try {
       await axios.post("http://localhost:8082/api/saveCourse", courseData);
-      navigate("/viewcourse"); // Navigate after successful post request
+      
+      // Remove courseData and set showLayout to false
+      localStorage.removeItem("courseData");
+      localStorage.setItem("showLayout", "false");
+
+      navigate("/viewcourse"); 
     } catch (error) {
       console.error("Error saving course:", error);
     }
@@ -48,12 +53,21 @@ const Layout = () => {
         ))}
       </div>
 
-      <button className="bg-blue-500 text-white px-4 py-2 rounded-lg mt-6" onClick={saveCourse}>
-        Save and Create
-      </button>
-      <button className="bg-blue-500 text-white px-4 py-2 rounded-lg mt-6">
-        Discard
-      </button>
+      <div className="flex gap-4 mt-6">
+        <button className="bg-blue-500 text-white px-4 py-2 rounded-lg" onClick={saveCourse}>
+          Save and Create
+        </button>
+        <button 
+          className="bg-red-500 text-white px-4 py-2 rounded-lg"
+          onClick={() => {
+            localStorage.removeItem("courseData");
+            localStorage.setItem("showLayout", "false");
+            navigate("/generatepage");
+          }}
+        >
+          Discard
+        </button>
+      </div>
     </div>
   );
 };

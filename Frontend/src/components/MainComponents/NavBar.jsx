@@ -135,7 +135,7 @@ function NavBar() {
                 <span className="badge">New</span>
               </Link>
             </li>
-            <li><a>Courses</a></li>
+            <li><Link to="/viewcourse" className="justify-between">Courses</Link></li>
             <li>
               <button onClick={handleLogout} className="justify-between">
                 Logout

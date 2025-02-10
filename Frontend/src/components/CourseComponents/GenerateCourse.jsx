@@ -1,5 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import Cookies from "js-cookie";
+
+const decodeJWT = (token) => {
+  const payload = token.split('.')[1];
+  const decodedPayload = atob(payload);
+  return JSON.parse(decodedPayload);
+};
 
 function GenerateCourse({ onGenerate }) {
   const [step, setStep] = useState(0);
@@ -11,6 +18,27 @@ function GenerateCourse({ onGenerate }) {
     noOfChapters: "",
     videos: "", // Added videos field
   });
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
+
+  // Fetch the userId from the JWT token and store it
+  useEffect(() => {
+    const token = Cookies.get("jwt");
+
+    if (token) {
+      try {
+        const decodedToken = decodeJWT(token);
+        const userId = decodedToken?.userId;
+        setUserId(userId); // Store userId
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    } else {
+      console.error("No JWT found in cookies");
+    }
+    setIsLoading(false); // End loading when done
+  }, []);
 
   const handleNext = () => {
     if (step < 2) {
@@ -31,21 +59,33 @@ function GenerateCourse({ onGenerate }) {
 
   const generate = async () => {
     try {
-      console.log("Request Data:", formData);
-   
-      const response = await axios.post("http://localhost:8082/api/geminiLayout", formData);
-      localStorage.setItem("courseData", JSON.stringify(response.data));
+      // Include userId in the form data before sending it to the API
+      const finalFormData = { ...formData, userId };
+  
+      console.log("Request Data:", finalFormData);
+  
+      const response = await axios.post("http://localhost:8082/api/geminiLayout", finalFormData);
+      
+      // Include userId in the course data before storing it in localStorage
+      const courseDataWithUserId = { ...response.data, userId };
+  
+      // Store the updated course data with userId in localStorage
+      localStorage.setItem("courseData", JSON.stringify(courseDataWithUserId));
       console.log("Response:", response.data);
-      onGenerate();  
+  
+      onGenerate();
     } catch (error) {
       console.error("Error generating course:", error);
     }
   };
+  
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 container mx-auto px-4 py-6 pt-28">
-       
         <div className="flex justify-center mb-10">
           <ul className="steps steps-horizontal lg:steps-horizontal w-full max-w-3xl">
             <li className={`step ${step >= 0 ? "step-primary" : ""}`}>Category</li>
@@ -54,7 +94,6 @@ function GenerateCourse({ onGenerate }) {
           </ul>
         </div>
 
-        
         <form className="bg-gray-100 p-6 rounded-lg shadow-md">
           {step === 0 && (
             <div>
@@ -136,7 +175,6 @@ function GenerateCourse({ onGenerate }) {
           )}
         </form>
 
-       
         <div className="flex justify-between mt-6">
           <button
             className={`btn btn-primary ${step === 0 ? "opacity-50 cursor-not-allowed" : ""}`}

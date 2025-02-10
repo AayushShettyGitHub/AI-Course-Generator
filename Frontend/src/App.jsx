@@ -7,6 +7,8 @@ import ProfileSwitch from "./components/MainComponents/ProfileSwitch.jsx";
 import { Navigate } from "react-router-dom";
 import CourseGenerator from "./components/Pages/CourseGenerator.jsx";
 import CourseView from "./components/CourseComponents/CourseView.jsx";
+import CourseLayout2 from "./components/CourseComponents/CourseLayout2.jsx";
+import ChapterContent from "./components/CourseComponents/ChapterContent.jsx";
 
 
 function App() {
@@ -21,6 +23,8 @@ function App() {
           <Route path="/profilepage" element={<ProfileSwitch />} />
           <Route path="/generatepage" element={<CourseGenerator />} />
           <Route path="/viewcourse" element={<CourseView />} />
+          <Route path="/viewlayout" element={<CourseLayout2 />} />
+          <Route path="/viewcontent" element={<ChapterContent />} />
         </Route>
       </Routes>
     </Router>

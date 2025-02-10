@@ -10,14 +10,19 @@ const ChapterSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  content:{
+  content: {
     type: String,
     required: true,
-  }
+  },
 });
 
 const CourseSchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,  // Reference to User model
+      ref: 'User',  // Name of the user collection
+      required: true,
+    },
     courseName: {
       type: String,
       required: [true, 'Course name is required'],

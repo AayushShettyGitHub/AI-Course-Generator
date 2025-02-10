@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectToDatabase= require('./config/database.js'); 
-const authRoutes=require('./routes/verify')
+const Routes=require('./routes/verify')
 
 const server = express();
 server.use(express.json({ limit: '10mb' }));
@@ -15,7 +15,7 @@ server.use(
   })
 );
 
-server.use('/api',authRoutes) ;
+server.use('/api',Routes) ;
 
 
 
