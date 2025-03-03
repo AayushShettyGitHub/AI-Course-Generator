@@ -29,10 +29,7 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    let imageUrl = 'https://images.unsplash.com/photo-1563279495-cd1cf39e7a1b';
-    if (profileImage) {
-      imageUrl = await uploadImageToCloudinary(profileImage);
-    }
+  
 
     const user = new Schema({ name, email, password });
 
@@ -49,8 +46,7 @@ exports.registerUser = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        age: user.age,
-        profileImage: user.profileImage,
+      
       },
     });
   } catch (err) {

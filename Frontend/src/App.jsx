@@ -8,7 +8,9 @@ import { Navigate } from "react-router-dom";
 import CourseGenerator from "./components/Pages/CourseGenerator.jsx";
 import CourseView from "./components/CourseComponents/CourseView.jsx";
 import CourseLayout2 from "./components/CourseComponents/CourseLayout2.jsx";
+import PublishView from "./components/CourseComponents/CourseLayout2.jsx";
 import ChapterContent from "./components/CourseComponents/ChapterContent.jsx";
+import Publish from "./components/Pages/Publish.jsx";
 
 
 function App() {
@@ -25,6 +27,8 @@ function App() {
           <Route path="/viewcourse" element={<CourseView />} />
           <Route path="/viewlayout" element={<CourseLayout2 />} />
           <Route path="/viewcontent" element={<ChapterContent />} />
+          <Route path="/publish" element={<Publish />} />
+          <Route path="/publishView" element={<PublishView />} />
         </Route>
       </Routes>
     </Router>

@@ -16,7 +16,7 @@ function SignIn({ toggleAuthMode }) {
     try {
     
       const response = await axios.post(
-        "http://localhost:8082/api/login", 
+        "http://localhost:8082/auth/login", 
         { email, password },
         { withCredentials: true } 
       );

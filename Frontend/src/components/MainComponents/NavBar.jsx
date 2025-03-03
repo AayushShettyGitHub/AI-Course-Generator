@@ -27,7 +27,13 @@ function NavBar() {
         const userId = decodedToken?.userId;
 
         if (userId) {
-          fetch(`http://localhost:8082/api/getUser?id=${userId}`)
+          fetch(`http://localhost:8082/api/getUser?id=${userId}`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            }, 
+          })
             .then((response) => response.json())
             .then((data) => {
               if (data) {
@@ -78,13 +84,7 @@ function NavBar() {
             <ul className="menu menu-horizontal px-1">
               <li><button onClick={() => navigate("/homepage")}>Home</button></li>
               <li>
-                <details>
-                  <summary>Parent</summary>
-                  <ul className="p-2">
-                    <li><a>Submenu 1</a></li>
-                    <li><a>Submenu 2</a></li>
-                  </ul>
-                </details>
+              <button onClick={() => navigate("/publish")}>Publish</button>
               </li>
               <li><button onClick={() => navigate("/generatepage")}>Generate</button></li>
             </ul>

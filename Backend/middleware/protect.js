@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 
 exports.authenticate = (req, res, next) => {
-  const token = req.cookies.jwt; // Read the token from cookies
+  const token = req.cookies.jwt;
 
   if (!token) {
     return res.status(401).json({ message: "Unauthorized: No token provided" });

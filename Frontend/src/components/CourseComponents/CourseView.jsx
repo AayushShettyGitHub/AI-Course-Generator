@@ -26,7 +26,13 @@ const CourseView = () => {
 
         if (userId) {
           
-          fetch(`http://localhost:8082/api/getUser?id=${userId}`)
+          fetch(`http://localhost:8082/api/getUser?id=${userId}`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            }, 
+          })
             .then((response) => response.json())
             .then((data) => {
               if (data) {
@@ -39,8 +45,14 @@ const CourseView = () => {
               setIsLoading(false);
             });
 
-          // Fetch courses for the user
-          fetch(`http://localhost:8082/api/getCourse/${userId}`)
+       
+          fetch(`http://localhost:8082/api/getCourse/${userId}`,{
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            }, 
+          })
             .then((response) => response.json())
             .then((data) => {
               if (data && data.length > 0) {
@@ -59,6 +71,7 @@ const CourseView = () => {
   }, []);
 
   const handleGenerateCourse = (course) => {
+    
     navigate("/viewlayout", { state: { course } });
   };
 

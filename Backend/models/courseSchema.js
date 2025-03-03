@@ -19,8 +19,8 @@ const ChapterSchema = new mongoose.Schema({
 const CourseSchema = new mongoose.Schema(
   {
     userId: {
-      type: mongoose.Schema.Types.ObjectId,  // Reference to User model
-      ref: 'User',  // Name of the user collection
+      type: mongoose.Schema.Types.ObjectId,  
+      ref: 'User',  
       required: true,
     },
     courseName: {

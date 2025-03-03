@@ -24,7 +24,13 @@ const ProfileSwitch = () => {
         const userId = decodedToken?.userId;
 
         if (userId) {
-          fetch(`http://localhost:8082/api/getUser?id=${userId}`)
+          fetch(`http://localhost:8082/api/getUser?id=${userId}`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            }, 
+          })
             .then((response) => response.json())
             .then((data) => {
               if (data) {

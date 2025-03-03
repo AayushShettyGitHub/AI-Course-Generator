@@ -16,13 +16,13 @@ function GenerateCourse({ onGenerate }) {
     difficulty: "",
     duration: "",
     noOfChapters: "",
-    videos: "", // Added videos field
+    videos: "", 
   });
 
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState(null);
 
-  // Fetch the userId from the JWT token and store it
+ 
   useEffect(() => {
     const token = Cookies.get("jwt");
 
@@ -30,14 +30,14 @@ function GenerateCourse({ onGenerate }) {
       try {
         const decodedToken = decodeJWT(token);
         const userId = decodedToken?.userId;
-        setUserId(userId); // Store userId
+        setUserId(userId); 
       } catch (error) {
         console.error("Error decoding token:", error);
       }
     } else {
       console.error("No JWT found in cookies");
     }
-    setIsLoading(false); // End loading when done
+    setIsLoading(false); 
   }, []);
 
   const handleNext = () => {
@@ -59,17 +59,22 @@ function GenerateCourse({ onGenerate }) {
 
   const generate = async () => {
     try {
-      // Include userId in the form data before sending it to the API
+
       const finalFormData = { ...formData, userId };
   
       console.log("Request Data:", finalFormData);
   
-      const response = await axios.post("http://localhost:8082/api/geminiLayout", finalFormData);
+      const response = await axios.post("http://localhost:8082/api/geminiLayout", finalFormData,{
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true,
+      });
       
-      // Include userId in the course data before storing it in localStorage
+      
       const courseDataWithUserId = { ...response.data, userId };
   
-      // Store the updated course data with userId in localStorage
+   
       localStorage.setItem("courseData", JSON.stringify(courseDataWithUserId));
       console.log("Response:", response.data);
   
@@ -160,17 +165,7 @@ function GenerateCourse({ onGenerate }) {
                   className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Add Videos (Optional)</label>
-                <input
-                  type="text"
-                  name="videos"
-                  value={formData.videos}
-                  onChange={handleChange}
-                  placeholder="Add Video URLs (comma-separated)"
-                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              
             </div>
           )}
         </form>

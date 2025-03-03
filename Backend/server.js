@@ -1,23 +1,43 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const connectToDatabase= require('./config/database.js'); 
-const Routes=require('./routes/verify')
+const express = require("express");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const http = require("http");
+const { Server } = require("socket.io");
+const connectToDatabase = require("./config/database.js");
+const authRoutes = require("./routes/auth");
 
-const server = express();
-server.use(express.json({ limit: '10mb' }));
-server.use(cookieParser());
-server.use(
-  cors({
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
     origin: "http://localhost:5173",
     credentials: true,
-  })
-);
+  },
+});
 
-server.use('/api',Routes) ;
+app.use(express.json({ limit: "10mb" }));
+app.use(cookieParser());
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 
+const publish = require("./Controller/publish")(io);
+const routesWithSocket = require("./routes/verify")(io); // Ensure (io) is passed
 
+console.log("Routes with Socket:", routesWithSocket); // Debugging check
+
+app.use("/api", routesWithSocket);
+app.use("/auth", authRoutes);
+
+app.post("/api/courses/add", publish.publishCourse);
+app.get("/api/courses/others", publish.getCoursesByOtherUsers);
+app.get("/api/courses/mine", publish.getCoursesByCurrentUser);
+
+io.on("connection", (socket) => {
+  console.log("A user connected");
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+  });
+});
 
 const port = process.env.PORT || 5000;
 server.listen(port, () => {

@@ -17,7 +17,7 @@ function SignUp({ toggleAuthMode }) {
   const handleSignUp = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:8082/api/register", formData);
+      const response = await axios.post("http://localhost:8082/auth/register", formData);
       console.log("User signed up successfully!", response.data);
 
      

@@ -15,9 +15,14 @@ const Layout = () => {
 
   const saveCourse = async () => {
     try {
-      await axios.post("http://localhost:8082/api/saveCourse", courseData);
+      await axios.post("http://localhost:8082/api/saveCourse", courseData,{
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true,
+      });
       
-      // Remove courseData and set showLayout to false
+    
       localStorage.removeItem("courseData");
       localStorage.setItem("showLayout", "false");
 
