@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const { sendResetEmail } = require('../config/sendMail');
 const { generateToken } = require('../config/utils');
 const { uploadImageToCloudinary } = require('./cloudinary');
 
@@ -8,9 +9,74 @@ const jwt = require('jsonwebtoken');
 const Schema = require('../models/schema');
 const { OAuth2Client } = require('google-auth-library');
 
+
 const clientID = process.env.GOOGLE_CLIENT_ID;
 const jwtSecret = process.env.JWT_SECRET;
 const client = new OAuth2Client(clientID);
+
+exports.verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+
+  try {
+    const user = await Schema.findOne({ email });
+
+    if (!user || user.resetOTP !== otp || Date.now() > user.resetOTPExpiry) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+    user.resetOTP = null;
+    user.resetOTPExpiry = null;
+    res.status(200).json({ message: 'OTP verified successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to verify OTP', error: error.message });
+  }
+};
+exports.resetPassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  try {
+    const user = await Schema.findOne({ email });
+    if (!user || Date.now() > user.resetOTPExpiry) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    
+    user.password = newPassword;
+   
+    await user.save();
+
+    res.status(200).json({ message: 'Password reset successful' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to reset password', error: error.message });
+  }
+};
+
+
+
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await Schema.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Email not found' });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
+    const expiry = Date.now() + 10 * 60 * 1000; 
+
+    user.resetOTP = otp;
+    user.resetOTPExpiry = expiry;
+    await user.save();
+
+    await sendResetEmail(email, otp);
+
+    res.status(200).json({ message: 'OTP sent to your email' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error sending OTP', error: error.message });
+  }
+};
+
 
 exports.registerUser = async (req, res) => {
   const { name, email, password} = req.body;
@@ -61,10 +127,21 @@ exports.registerUser = async (req, res) => {
   "age": 28,
   "profileImage": "https://picsum.photos/200/300" 
 }*/
- exports.updateUser = async (req, res) => {
-  const { name, email, age, profileImage } = req.body;
+exports.updateUser = async (req, res) => {
+  const {
+    name,
+    email,
+    age,
+    profileImage,
+    description,
+    nationality,
+    address,
+    phone,
+    interest,
+    profession
+  } = req.body;
+
   try {
-    
     const user = await Schema.findOne({ email });
 
     if (!user) {
@@ -73,18 +150,22 @@ exports.registerUser = async (req, res) => {
 
     if (name) user.name = name;
     if (age) user.age = age;
+    if (description) user.description = description;
+    if (nationality) user.nationality = nationality;
+    if (address) user.address = address;
+    if (phone) user.phone = phone;
+    if (interest) user.interest = interest;
+    if (profession) user.profession = profession;
 
-   
     if (profileImage) {
       try {
         const uploadedImageUrl = await uploadImageToCloudinary(profileImage);
-        user.profileImage = uploadedImageUrl; 
+        user.profileImage = uploadedImageUrl;
       } catch (error) {
         return res.status(500).json({ message: 'Image upload failed', error: error.message });
       }
     }
 
-  
     await user.save();
 
     res.status(200).json({
@@ -94,13 +175,20 @@ exports.registerUser = async (req, res) => {
         email: user.email,
         age: user.age,
         profileImage: user.profileImage,
+        description: user.description,
+        nationality: user.nationality,
+        address: user.address,
+        phone: user.phone,
+        interest: user.interest,
+        profession: user.profession,
       },
     });
   } catch (error) {
     console.error('Update User Error:', error);
     res.status(500).json({ message: 'Failed to update user', error: error.message });
   }
- }  
+};
+
 
 exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
@@ -177,4 +265,4 @@ exports.googleSignIn = async (req, res) => {
   } catch (err) {
     res.status(400).json({ error: 'Failed to authenticate with Google', details: err.message });
   }
-};
+};  

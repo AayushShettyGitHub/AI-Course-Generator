@@ -1,5 +1,21 @@
 const mongoose = require('mongoose');
 
+const ChapterSchema = new mongoose.Schema({
+  chapterNumber: {
+    type: Number,
+    required: true,
+  },
+  chapterName: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  content: {
+    type: String,
+    required: true,
+  },
+});
+
 const courseSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -35,12 +51,7 @@ const courseSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  chapters: [
-    {
-      title: String,
-      content: String,
-    },
-  ],
+  chapters: [ChapterSchema], 
 }, {
   timestamps: true,
 });

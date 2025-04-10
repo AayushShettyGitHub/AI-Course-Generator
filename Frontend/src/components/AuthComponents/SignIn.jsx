@@ -14,7 +14,7 @@ function SignIn({ toggleAuthMode }) {
     setError(""); 
 
     try {
-    
+     console.log(email,password)
       const response = await axios.post(
         "http://localhost:8082/auth/login", 
         { email, password },
@@ -40,10 +40,8 @@ function SignIn({ toggleAuthMode }) {
         <div className="text-center lg:text-left">
           <h1 className="text-5xl font-bold px-20">Login now!</h1>
           <p className="py-6 px-16 text-lg max-w-45">
-            Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda
-            excepturi exercitationem quasi. In deleniti eaque aut repudiandae et
-            a id nisi.
-          </p>
+           Login to your account and start generating courses with ease.
+            </p>
         </div>
         <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
           <form className="card-body" onSubmit={handleSignIn}>
@@ -54,7 +52,7 @@ function SignIn({ toggleAuthMode }) {
               <input
                 type="email"
                 placeholder="email"
-                className="input input-bordered"
+                className="input input-bordered" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -85,6 +83,13 @@ function SignIn({ toggleAuthMode }) {
           <button className="btn btn-link mt-4" onClick={toggleAuthMode}>
             Don't have an account? Sign Up
           </button>
+          <button
+  className="btn btn-link text-sm mt-2"
+  onClick={() => navigate("/forgot-password")}
+>
+  Forgot Password?
+</button>
+
         </div>
       </div>
     </div>

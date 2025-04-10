@@ -34,9 +34,7 @@ function SignUp({ toggleAuthMode }) {
         <div className="text-center lg:text-left">
           <h1 className="text-5xl font-bold px-20">Sign Up now!</h1>
           <p className="py-6 px-16 text-lg max-w-45">
-            Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda
-            excepturi exercitationem quasi. In deleniti eaque aut repudiandae et
-            a id nisi.
+            Start generating courses with ease. Create your account and unlock the potential of our platform.
           </p>
         </div>
         <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">

@@ -1,8 +1,12 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const axios = require("axios");
+const dotenv = require("dotenv");
+dotenv.config();
 
 const apiKey = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const youtubeKey = process.env.youtubeKey;
 
 exports.generateLayout = async (req, res) => {
   try {
@@ -41,7 +45,7 @@ exports.generateLayout = async (req, res) => {
     const result = await model.generateContent(prompt);
     let responseText = await result.response.text();
 
-    // Fix JSON extraction
+
     responseText = responseText.replace(/```json|```/g, "").trim();
 
     try {
@@ -62,6 +66,8 @@ exports.generateLayout = async (req, res) => {
     });
   }
 };
+
+
 exports.generateContent = async (req, res) => {
   try {
     const { chapter } = req.body;
@@ -70,34 +76,17 @@ exports.generateContent = async (req, res) => {
       return res.status(400).json({ message: "Please provide a chapter to generate content" });
     }
 
-    const prompt = `
+    const contentPrompt = `
     Provide a **highly detailed** and **comprehensive** explanation for the topic:  
     **Chapter: ${chapter.chapterName}**.  
 
     The core concept is:  
     **${chapter.content}**  
 
-    The response should:
-    - Explain the topic **from fundamental principles to advanced concepts**.
-    - Include **historical context, real-world applications, and use cases**.
-    - Provide **technical details, mathematical formulations (if applicable), and step-by-step explanations**.
-    - Break down complex topics into **clear, structured sections**.
-    - **Compare** this concept with similar or related concepts.
-    - If applicable, include **common misconceptions, pitfalls, and best practices**.
-    - Use simple analogies when necessary to enhance understanding.
-    - If code examples are relevant, provide **fully functional** and **well-documented** code snippets.
-    - Ensure examples include **expected outputs**.
-
-    **YouTube Video Requirement:**
-    - Provide exactly **3 highly relevant YouTube video links** that explain this topic in depth.
-    - The video URLs must be **direct YouTube video links** in the format:  
-      - ✅ Correct format: "https://www.youtube.com/watch?v=VIDEO_ID"
-      - ❌ Incorrect format: "https://www.youtube.com/results?search_query=..."
-    - Do **NOT** return YouTube search results.
-    - Ensure all links are verified and accessible.
-
-    **Response Format (Strict JSON):**
-    Return the response **strictly in JSON format** with the following structure:
+    Also, generate exactly **3 relevant keywords** for finding YouTube videos on this topic.
+    Ensure that:
+    - The keywords are concise and effective for YouTube searches.
+    - The response must be valid JSON in this format:
     {
       "content": [
         {
@@ -106,43 +95,53 @@ exports.generateContent = async (req, res) => {
           "code": "If applicable, provide fully formatted code"
         }
       ],
-      "videos": [
-        {
-          "videoTitle": "Title of the YouTube video",
-          "videoUrl": "https://www.youtube.com/watch?v=VIDEO_ID"
-        }
-      ]
+      "keywords": ["keyword1", "keyword2", "keyword3"]
     }
-
-    **IMPORTANT:**
-    - The JSON format must be strictly valid.
-    - YouTube URLs **must** contain "/watch?v=" and NOT "/results?".  
     `;
 
-    const result = await model.generateContent(prompt);
-    let responseText = await result.response.text();
-
-    // Fix JSON extraction
+    const contentResult = await model.generateContent(contentPrompt);
+    let responseText = await contentResult.response.text();
     responseText = responseText.replace(/```json|```/g, "").trim();
 
+    let generatedContent;
     try {
-      let content = JSON.parse(responseText);
-
-      // Validate YouTube URLs
-      if (content.videos) {
-        content.videos = content.videos.filter(video =>
-          /^https:\/\/www\.youtube\.com\/watch\?v=[\w-]+$/.test(video.videoUrl)
-        );
-      }
-
-      res.status(200).json(content);
+      generatedContent = JSON.parse(responseText);
+      console.log("Generated Content:", generatedContent);
     } catch (parseError) {
       console.error("Error parsing AI model response:", parseError);
-      res.status(500).json({
+      return res.status(500).json({
         message: "Failed to parse generated content",
         error: parseError.message,
       });
     }
+
+   
+    let videoResults = [];
+    if (generatedContent.keywords && generatedContent.keywords.length > 0) {
+      for (const keyword of generatedContent.keywords) {
+        const youtubeSearchUrl = `https://www.googleapis.com/youtube/v3/search?key=${youtubeKey}&q=${encodeURIComponent(
+          keyword
+        )}&type=video&part=snippet&maxResults=1`;
+
+        try {
+          const youtubeResponse = await axios.get(youtubeSearchUrl);
+          if (youtubeResponse.data.items.length > 0) {
+            const video = youtubeResponse.data.items[0];
+            videoResults.push({
+              videoTitle: video.snippet.title,
+              videoUrl: `https://www.youtube.com/watch?v=${video.id.videoId}`,
+            });
+          }
+        } catch (youtubeError) {
+          console.error("YouTube API error:", youtubeError);
+        }
+      }
+    }
+
+    return res.status(200).json({
+      content: generatedContent.content,
+      videos: videoResults,
+    });
   } catch (error) {
     console.error("Error generating content:", error);
     res.status(500).json({

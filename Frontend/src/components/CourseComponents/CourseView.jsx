@@ -56,6 +56,7 @@ const CourseView = () => {
             .then((response) => response.json())
             .then((data) => {
               if (data && data.length > 0) {
+                console.log("Fetched courses:", data);
                 setCourses(data);
               }
             })
@@ -75,6 +76,38 @@ const CourseView = () => {
     navigate("/viewlayout", { state: { course } });
   };
 
+  const handleDeleteCourse = async (courseId) => {
+    try {
+      const response = await fetch(`http://localhost:8082/api/deleteCourse/${courseId}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (response.ok) {
+        alert("Course Deleted");
+  
+   
+        const updatedCourses = await fetch(`http://localhost:8082/api/getCourse/${user?._id}`, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }).then((res) => res.json());
+  
+        setCourses(updatedCourses);
+      } else {
+        console.error("Failed to delete course");
+      }
+    } catch (error) {
+      console.error("Error deleting course:", error);
+    }
+  };
+  
+
   if (isLoading) return <p className="text-center text-xl font-semibold">Loading...</p>;
 
   return (
@@ -92,11 +125,18 @@ const CourseView = () => {
                 <p className="text-gray-600 mb-4">Category: <span className="font-medium">{course.category}</span></p>
                 <p className="text-gray-500 mb-4">{course.description || 'No description available'}</p>
                 <button
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg mr-2"
                   onClick={() => handleGenerateCourse(course)}
                 >
                   Start Course
                 </button>
+                <button
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                  onClick={() => handleDeleteCourse(course._id)}
+                >
+                  Delete
+                </button>
+               
               </div>
             ))}
           </div>

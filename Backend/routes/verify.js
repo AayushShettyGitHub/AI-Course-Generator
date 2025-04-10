@@ -3,7 +3,7 @@ const { authenticate } = require("../middleware/protect");
 const { registerUser, updateUser, loginUser, googleSignIn, logout } = require("../Controller/setup");
 const { getData } = require("../Controller/getData");
 const { generateLayout, generateContent } = require("../services/AiModel");
-const { saveCourse, getCourse } = require("../Controller/courseStore");
+const { saveCourse, getCourse ,deleteCourse} = require("../Controller/courseStore");
 const { getVideo } = require("../Controller/getVideo");
 
 const router = express.Router();
@@ -24,7 +24,7 @@ router.post("/geminiLayout", generateLayout);
 router.post("/geminiContent", generateContent);
 router.post("/saveCourse", saveCourse);
 router.post("/getVideo", getVideo);
-
+router.delete("/deleteCourse/:courseId", deleteCourse);
 
 module.exports = (io) => {
   const publish = require("../Controller/publish")(io);

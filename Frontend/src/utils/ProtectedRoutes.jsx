@@ -4,6 +4,7 @@ import Cookies from "js-cookie";
 
 const ProtectedRoute = () => {
   const isAuthenticated = Cookies.get("jwt");
+  console.log("Checking authentication status:", isAuthenticated);
 
 
   if (!isAuthenticated) {

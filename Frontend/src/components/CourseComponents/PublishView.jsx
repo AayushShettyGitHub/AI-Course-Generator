@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 const PublishView = () => {
   const location = useLocation();
   const course = location.state?.course;
+  console.log("Course received:", course);
 
   if (!course) {
     return <div className="text-center text-red-500">No course data available.</div>;

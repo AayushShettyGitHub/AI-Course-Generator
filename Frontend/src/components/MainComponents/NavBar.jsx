@@ -97,15 +97,7 @@ function NavBar() {
           <ul className="menu bg-base-200 text-base-content w-80 p-4">
         
             <li><button onClick={() => navigate("/homepage")}>Home</button></li>
-            <li>
-              <details>
-                <summary>Parent</summary>
-                <ul className="p-2">
-                  <li><a>Submenu 1</a></li>
-                  <li><a>Submenu 2</a></li>
-                </ul>
-              </details>
-            </li>
+            <li><button onClick={() => navigate("/publish")}>Publish</button></li>
             <li><button onClick={() => navigate("/generatepage")}>Generate</button></li>
           </ul>
         </div>

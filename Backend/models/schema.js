@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { uploadImageToCloudinary } = require('../Controller/cloudinary'); 
+
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -28,6 +29,41 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     min: [18, 'You must be at least 18 years old to sign up'],
   },
+
+
+  description: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  nationality: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  address: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  phone: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  interest: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  profession: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+
+  resetOTP: String,
+  resetOTPExpiry: Date,
 }, {
   timestamps: true,
 });
@@ -44,20 +80,5 @@ UserSchema.pre('save', async function (next) {
   next();
 });
 
-UserSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
-UserSchema.methods.uploadProfileImage = async function (imagePath) {
-  try {
-    const result = await uploadImageToCloudinary(imagePath);  
-    this.profileImage = result; 
-    await this.save();
-    return this.profileImage;
-  } catch (error) {
-    console.error('Cloudinary Upload Error:', error); //check cloudinary ke liye used
-    throw new Error('Image upload failed');
-  }
-};
 
 module.exports = mongoose.model('User', UserSchema);

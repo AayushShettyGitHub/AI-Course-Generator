@@ -53,42 +53,49 @@ module.exports = (io) => {
 
     publishCourse: async (req, res) => {
       try {
-        const {
-          userId,
-          courseName,
-          category,
-          description,
-          difficulty,
-          duration,
-          noOfChapters,
-          topic,
-          chapters,
-        } = req.body;
-
-        if (!userId || !courseName || !category || !description || !difficulty || !duration || !noOfChapters || !topic) {
-          return res.status(400).json({ message: "All fields are required" });
-        }
-
-        const newCourse = new Course({
-          userId,
-          courseName,
-          category,
-          description,
-          difficulty,
-          duration,
-          noOfChapters,
-          topic,
-          chapters,
-        });
-
-        await newCourse.save();
-
-        io.emit("newCourse", newCourse);
-
-        res.status(201).json({ message: "Course published successfully", course: newCourse });
+          const {
+              userId,
+              courseName,
+              category,
+              description,
+              difficulty,
+              duration,
+              noOfChapters,
+              topic,
+              chapters,
+          } = req.body;
+  
+          if (!userId || !courseName || !category || !description || !difficulty || !duration || !noOfChapters || !topic) {
+              return res.status(400).json({ message: "All fields are required" });
+          }
+  
+          const existingCourse = await Course.findOne({ userId, courseName });
+  
+          if (existingCourse) {
+              return res.status(400).json({ message: "Course already published" });
+          }
+  
+          const newCourse = new Course({
+              userId,
+              courseName,
+              category,
+              description,
+              difficulty,
+              duration,
+              noOfChapters,
+              topic,
+              chapters,
+          });
+  
+          await newCourse.save();
+  
+          io.emit("newCourse", newCourse);
+  
+          res.status(201).json({ message: "Course published successfully", course: newCourse });
       } catch (error) {
-        res.status(500).json({ message: "Error publishing course", error });
+          res.status(500).json({ message: "Error publishing course", error });
       }
-    },
+  },
+  
   };
 };

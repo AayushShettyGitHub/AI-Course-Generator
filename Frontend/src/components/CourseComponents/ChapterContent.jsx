@@ -8,6 +8,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 const ChapterContent = () => {
   const location = useLocation();
   const { chapter } = location.state;
+  console.log("Chapter received:", chapter);
   const [generatedContent, setGeneratedContent] = useState([]);
   const [generatedVideos, setGeneratedVideos] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -64,7 +65,7 @@ const ChapterContent = () => {
         </button>
         {error && <p className="text-red-500 mt-4">{error}</p>}
 
-        {/* Generated Content */}
+       
         {generatedContent.length > 0 && (
           <div className="mt-6">
             <h2 className="text-2xl font-semibold mb-3">Generated Content</h2>
@@ -92,7 +93,7 @@ const ChapterContent = () => {
           </div>
         )}
 
-        {/* Videos Section */}
+
         {generatedVideos.length > 0 && (
           <div className="mt-10">
             <button
