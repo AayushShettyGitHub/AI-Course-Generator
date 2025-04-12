@@ -44,12 +44,12 @@ exports.generateLayout = async (req, res) => {
 
     const result = await model.generateContent(prompt);
     let responseText = await result.response.text();
+    responseText2 = responseText.replace(/```json|```/g, "").trim();
 
-
-    responseText = responseText.replace(/```json|```/g, "").trim();
+    
 
     try {
-      const generatedLayout = JSON.parse(responseText);
+      const generatedLayout = JSON.parse(responseText2);
       res.status(200).json(generatedLayout);
     } catch (parseError) {
       console.error("Error parsing the generated layout:", parseError);

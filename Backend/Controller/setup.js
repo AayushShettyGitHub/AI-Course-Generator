@@ -30,6 +30,7 @@ exports.verifyOtp = async (req, res) => {
     res.status(500).json({ message: 'Failed to verify OTP', error: error.message });
   }
 };
+
 exports.resetPassword = async (req, res) => {
   const { email, newPassword } = req.body;
 

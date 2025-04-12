@@ -8,7 +8,7 @@ const { getVideo } = require("../Controller/getVideo");
 
 const router = express.Router();
 
-console.log("Loaded AI Model Functions:", { generateContent });
+
 
 router.get("/protected-route", (req, res) => {
   res.status(200).json({ message: "Welcome to the protected route!" });

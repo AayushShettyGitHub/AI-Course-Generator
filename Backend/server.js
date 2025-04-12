@@ -20,9 +20,9 @@ app.use(cookieParser());
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 
 const publish = require("./Controller/publish")(io);
-const routesWithSocket = require("./routes/verify")(io); // Ensure (io) is passed
+const routesWithSocket = require("./routes/verify")(io);
 
-console.log("Routes with Socket:", routesWithSocket); // Debugging check
+console.log("Routes with Socket:", routesWithSocket); 
 
 app.use("/api", routesWithSocket);
 app.use("/auth", authRoutes);
