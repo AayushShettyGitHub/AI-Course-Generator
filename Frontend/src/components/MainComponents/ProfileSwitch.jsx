@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import ProfilePage from './ProfilePage';  
-import ProfileEdit from './ProfileEdit'; 
-import NavBar from './NavBar'; 
+import ProfilePage from './ProfilePage';
+import ProfileEdit from './ProfileEdit';
+import NavBar from './NavBar';
 
 const ProfileSwitch = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -29,7 +29,7 @@ const ProfileSwitch = () => {
             credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-            }, 
+            },
           })
             .then((response) => response.json())
             .then((data) => {
@@ -52,7 +52,7 @@ const ProfileSwitch = () => {
     }
   }, [isEditing]);
 
- 
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -60,15 +60,15 @@ const ProfileSwitch = () => {
   return isEditing ? (
     <ProfileEdit
       user={updatedUser}
-      onCancel={() => setIsEditing(false)} 
+      onCancel={() => setIsEditing(false)}
     />
   ) : (
     <>
-    <NavBar />
-    <ProfilePage
-      user={updatedUser}
-      onEdit={() => setIsEditing(true)} 
-    />
+      <NavBar />
+      <ProfilePage
+        user={updatedUser}
+        onEdit={() => setIsEditing(true)}
+      />
     </>
   );
 };

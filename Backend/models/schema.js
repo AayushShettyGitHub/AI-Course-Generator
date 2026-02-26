@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const { uploadImageToCloudinary } = require('../Controller/cloudinary'); 
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -18,9 +17,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     minlength: [6, 'Password must be at least 6 characters long'],
   },
-  googleId: {
-    type: String,
-  },
+  googleId: String,
   profileImage: {
     type: String,
     default: '',
@@ -29,8 +26,6 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     min: [18, 'You must be at least 18 years old to sign up'],
   },
-
-
   description: {
     type: String,
     default: '',
@@ -62,11 +57,15 @@ const UserSchema = new mongoose.Schema({
     trim: true,
   },
 
+
   resetOTP: String,
   resetOTPExpiry: Date,
+  resetToken: String,
+  resetTokenExpiry: Date,
 }, {
   timestamps: true,
-});
+})
+
 
 UserSchema.pre('save', async function (next) {
   if (this.password && this.isModified('password')) {
@@ -79,6 +78,5 @@ UserSchema.pre('save', async function (next) {
   }
   next();
 });
-
 
 module.exports = mongoose.model('User', UserSchema);

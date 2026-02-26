@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import NavBar from "../MainComponents/NavBar";
 import Footer from "../MainComponents/Footer";
 import GenerateCourse from "../CourseComponents/GenerateCourse";
-import Layout from "../CourseComponents/Layout"; 
+import Layout from "../CourseComponents/Layout";
 
 const CourseGenerator = () => {
   const [showLayout, setShowLayout] = useState(false);
@@ -10,9 +10,9 @@ const CourseGenerator = () => {
   useEffect(() => {
     const storedLayoutState = localStorage.getItem("showLayout");
     if (storedLayoutState === "true") {
-      setShowLayout(true); 
+      setShowLayout(true);
     }
-   
+
   }, []);
 
   const handleGenerate = () => {

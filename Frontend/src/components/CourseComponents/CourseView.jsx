@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../MainComponents/NavBar";
 import Footer from "../MainComponents/Footer";
@@ -25,13 +25,13 @@ const CourseView = () => {
         const userId = decodedToken?.userId;
 
         if (userId) {
-          
+
           fetch(`http://localhost:8082/api/getUser?id=${userId}`, {
             method: 'GET',
             credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-            }, 
+            },
           })
             .then((response) => response.json())
             .then((data) => {
@@ -45,13 +45,13 @@ const CourseView = () => {
               setIsLoading(false);
             });
 
-       
-          fetch(`http://localhost:8082/api/getCourse/${userId}`,{
+
+          fetch(`http://localhost:8082/api/getCourse/${userId}`, {
             method: 'GET',
             credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
-            }, 
+            },
           })
             .then((response) => response.json())
             .then((data) => {
@@ -72,7 +72,7 @@ const CourseView = () => {
   }, []);
 
   const handleGenerateCourse = (course) => {
-    
+
     navigate("/viewlayout", { state: { course } });
   };
 
@@ -85,11 +85,11 @@ const CourseView = () => {
           "Content-Type": "application/json",
         },
       });
-  
+
       if (response.ok) {
         alert("Course Deleted");
-  
-   
+
+
         const updatedCourses = await fetch(`http://localhost:8082/api/getCourse/${user?._id}`, {
           method: "GET",
           credentials: "include",
@@ -97,7 +97,7 @@ const CourseView = () => {
             "Content-Type": "application/json",
           },
         }).then((res) => res.json());
-  
+
         setCourses(updatedCourses);
       } else {
         console.error("Failed to delete course");
@@ -106,7 +106,7 @@ const CourseView = () => {
       console.error("Error deleting course:", error);
     }
   };
-  
+
 
   if (isLoading) return <p className="text-center text-xl font-semibold">Loading...</p>;
 
@@ -136,7 +136,7 @@ const CourseView = () => {
                 >
                   Delete
                 </button>
-               
+
               </div>
             ))}
           </div>

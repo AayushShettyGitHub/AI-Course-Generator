@@ -1,4 +1,3 @@
-import React from "react";
 import { Outlet, Navigate } from "react-router-dom";
 import Cookies from "js-cookie";
 
@@ -8,7 +7,7 @@ const ProtectedRoute = () => {
 
 
   if (!isAuthenticated) {
-   
+
     console.log("User is not authenticated, redirecting to login.");
     return <Navigate to="/login" />;
   }

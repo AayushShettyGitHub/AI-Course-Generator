@@ -23,17 +23,24 @@ function ForgotPass() {
   };
 
   const handleOtpVerify = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await axios.post("http://localhost:8082/auth/verify-otp", { email, otp });
-      setMessage(res.data.message);
-      setError("");
-      
-      navigate("/reset-password", { state: { email } });
-    } catch (err) {
-      setError(err.response?.data?.error || "Invalid OTP");
-    }
-  };
+  e.preventDefault();
+  try {
+    const res = await axios.post(
+      "http://localhost:8082/auth/verify-otp",
+      { email, otp },
+      { withCredentials: true } // send cookie
+    );
+
+    setMessage(res.data.message);
+    setError("");
+
+    // Navigate to reset password page, no need to pass email/token
+    navigate("/reset-password");
+  } catch (err) {
+    setError(err.response?.data?.message || "Invalid OTP");
+  }
+};
+
 
   return (
     <div className="hero min-h-screen bg-base-200">

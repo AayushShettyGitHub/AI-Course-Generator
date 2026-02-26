@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -15,18 +15,18 @@ const Layout = () => {
 
   const saveCourse = async () => {
     try {
-      await axios.post("http://localhost:8082/api/saveCourse", courseData,{
+      await axios.post("http://localhost:8082/api/saveCourse", courseData, {
         headers: {
           'Content-Type': 'application/json',
         },
         withCredentials: true,
       });
-      
-    
+
+
       localStorage.removeItem("courseData");
       localStorage.setItem("showLayout", "false");
 
-      navigate("/viewcourse"); 
+      navigate("/viewcourse");
     } catch (error) {
       console.error("Error saving course:", error);
     }
@@ -62,7 +62,7 @@ const Layout = () => {
         <button className="bg-blue-500 text-white px-4 py-2 rounded-lg" onClick={saveCourse}>
           Save and Create
         </button>
-        <button 
+        <button
           className="bg-red-500 text-white px-4 py-2 rounded-lg"
           onClick={() => {
             localStorage.removeItem("courseData");

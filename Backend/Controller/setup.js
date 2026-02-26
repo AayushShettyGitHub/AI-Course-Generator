@@ -1,4 +1,7 @@
 require('dotenv').config();
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 
 const { sendResetEmail } = require('../config/sendMail');
 const { generateToken } = require('../config/utils');
@@ -7,88 +10,100 @@ const { uploadImageToCloudinary } = require('./cloudinary');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Schema = require('../models/schema');
-const { OAuth2Client } = require('google-auth-library');
-
-
-const clientID = process.env.GOOGLE_CLIENT_ID;
-const jwtSecret = process.env.JWT_SECRET;
-const client = new OAuth2Client(clientID);
+const crypto = require('crypto');
 
 exports.verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
 
   try {
     const user = await Schema.findOne({ email });
-
     if (!user || user.resetOTP !== otp || Date.now() > user.resetOTPExpiry) {
       return res.status(400).json({ message: 'Invalid or expired OTP' });
     }
-    user.resetOTP = null;
-    user.resetOTPExpiry = null;
-    res.status(200).json({ message: 'OTP verified successfully' });
+
+    const token = crypto.randomBytes(32).toString('hex');
+    user.resetToken = token;
+    user.resetTokenExpiry = Date.now() + 10 * 60 * 1000;
+    await user.save();
+
+    res
+      .cookie('resetToken', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        maxAge: 10 * 60 * 1000,
+      })
+      .status(200)
+      .json({ message: 'OTP verified successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Failed to verify OTP', error: error.message });
   }
 };
-
-exports.resetPassword = async (req, res) => {
-  const { email, newPassword } = req.body;
-
-  try {
-    const user = await Schema.findOne({ email });
-    if (!user || Date.now() > user.resetOTPExpiry) {
-      return res.status(400).json({ message: 'Invalid or expired OTP' });
-    }
-
-    
-    user.password = newPassword;
-   
-    await user.save();
-
-    res.status(200).json({ message: 'Password reset successful' });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to reset password', error: error.message });
-  }
-};
-
-
 
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
 
   try {
     const user = await Schema.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'Email not found' });
 
-    if (!user) {
-      return res.status(404).json({ message: 'Email not found' });
-    }
-
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); 
-    const expiry = Date.now() + 10 * 60 * 1000; 
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = Date.now() + 10 * 60 * 1000;
 
     user.resetOTP = otp;
     user.resetOTPExpiry = expiry;
     await user.save();
 
     await sendResetEmail(email, otp);
-
     res.status(200).json({ message: 'OTP sent to your email' });
   } catch (error) {
     res.status(500).json({ message: 'Error sending OTP', error: error.message });
   }
 };
 
+exports.resetPassword = async (req, res) => {
+  const { newPassword } = req.body;
+  const token = req.cookies.resetToken;
+
+  if (!token) {
+    return res.status(400).json({ message: 'Reset token missing or expired. Verify OTP again.' });
+  }
+
+  try {
+    const user = await Schema.findOne({
+      resetToken: token,
+      resetTokenExpiry: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired reset token' });
+    }
+
+    user.password = newPassword;
+    user.resetToken = undefined;
+    user.resetTokenExpiry = undefined;
+    user.resetOTP = undefined;
+    user.resetOTPExpiry = undefined;
+
+    await user.save();
+
+    res.clearCookie('resetToken');
+    res.status(200).json({ message: 'Password reset successful' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to reset password', error: error.message });
+  }
+};
 
 exports.registerUser = async (req, res) => {
-  const { name, email, password} = req.body;
+  const { name, email, password } = req.body;
 
   try {
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({ message: 'All fields are required' });
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters" });
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
 
     const existingUser = await Schema.findOne({ email });
@@ -96,14 +111,9 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-  
-
     const user = new Schema({ name, email, password });
-
-
     await user.save();
 
- 
     const token = generateToken(user._id, res);
 
     res.status(201).json({
@@ -113,21 +123,13 @@ exports.registerUser = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-      
       },
     });
   } catch (err) {
     res.status(400).json({ error: 'Registration failed', details: err.message });
   }
 };
-/*
-{
-  "name": "Janer Doe",
-  "email": "janer.doe@example.com",
-  "password": "securepassword123",
-  "age": 28,
-  "profileImage": "https://picsum.photos/200/300" 
-}*/
+
 exports.updateUser = async (req, res) => {
   const {
     name,
@@ -139,12 +141,18 @@ exports.updateUser = async (req, res) => {
     address,
     phone,
     interest,
-    profession
+    profession,
   } = req.body;
 
   try {
-    const user = await Schema.findOne({ email });
+    // Priority: use req.userId from auth middleware, fallback to email
+    const query = req.userId ? { _id: req.userId } : { email };
 
+    if (!query._id && !query.email) {
+      return res.status(400).json({ message: 'User identifier (email or ID) is required' });
+    }
+
+    const user = await Schema.findOne(query);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -158,13 +166,17 @@ exports.updateUser = async (req, res) => {
     if (interest) user.interest = interest;
     if (profession) user.profession = profession;
 
-    if (profileImage) {
+    // Only upload to Cloudinary if it's a new image (base64 data URL)
+    if (profileImage && profileImage.startsWith('data:image')) {
       try {
         const uploadedImageUrl = await uploadImageToCloudinary(profileImage);
         user.profileImage = uploadedImageUrl;
       } catch (error) {
+        console.error('Cloudinary upload error in updateUser:', error);
         return res.status(500).json({ message: 'Image upload failed', error: error.message });
       }
+    } else if (profileImage === "") {
+      user.profileImage = ""; // Allow clearing the profile image
     }
 
     await user.save();
@@ -172,6 +184,7 @@ exports.updateUser = async (req, res) => {
     res.status(200).json({
       message: 'User updated successfully',
       user: {
+        id: user._id,
         name: user.name,
         email: user.email,
         age: user.age,
@@ -185,7 +198,7 @@ exports.updateUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Update User Error:', error);
+    console.error('Error in updateUser:', error);
     res.status(500).json({ message: 'Failed to update user', error: error.message });
   }
 };
@@ -196,13 +209,11 @@ exports.loginUser = async (req, res) => {
 
   try {
     const user = await Schema.findOne({ email });
-
     if (!user) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
@@ -226,44 +237,53 @@ exports.loginUser = async (req, res) => {
 
 exports.logout = (req, res) => {
   try {
-    res.cookie("jwt", "", { maxAge: 0 });
-    res.status(200).json({ message: "Logged out successfully" });
+    res.cookie('jwt', '', { maxAge: 0 });
+    res.status(200).json({ message: 'Logged out successfully' });
   } catch (error) {
-    console.log("Error in logout controller", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
 exports.googleSignIn = async (req, res) => {
-  const { googleToken } = req.body;
+  const { idToken } = req.body;
 
   try {
     const ticket = await client.verifyIdToken({
-      idToken: googleToken,
+      idToken,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
 
-    const payload = ticket.getPayload();
-    const { name, email, picture } = payload;
+    const { sub: googleId, email, name, picture } = ticket.getPayload();
 
     let user = await Schema.findOne({ email });
 
     if (!user) {
-      
-      const newUser = new Schema({
-        name,
+      user = new Schema({
+        googleId,
         email,
-        googleId: payload.sub,
+        name,
         profileImage: picture,
       });
-
-      user = await newUser.save(); 
+      await user.save();
+    } else if (!user.googleId) {
+      user.googleId = googleId;
+      if (!user.profileImage) user.profileImage = picture;
+      await user.save();
     }
 
-    
-    const token = jwt.sign({ id: user._id }, jwtSecret, { expiresIn: '1h' });
-    res.json({ token });
-  } catch (err) {
-    res.status(400).json({ error: 'Failed to authenticate with Google', details: err.message });
+    const token = generateToken(user._id, res);
+
+    res.status(200).json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        profileImage: user.profileImage,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({ error: 'Google sign-in failed', details: error.message });
   }
-};  
+};
+

@@ -1,6 +1,7 @@
 
+
 const express = require('express');
-const { registerUser,updateUser, loginUser, googleSignIn ,forgotPassword,resetPassword,verifyOtp} = require('../Controller/setup');
+const { registerUser, updateUser, loginUser, googleSignIn, forgotPassword, resetPassword, verifyOtp } = require('../Controller/setup');
 
 
 const router = express.Router();

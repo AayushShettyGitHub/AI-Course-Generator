@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +14,7 @@ const Publish = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [expandedCourse, setExpandedCourse] = useState(null);
-  const navigate = useNavigate();
+
 
   const decodeJWT = (token) => {
     try {
@@ -31,11 +31,11 @@ const Publish = () => {
     socket.on("connect", () => {
       console.log("Connected to Socket.IO server with ID:", socket.id);
     });
-  
+
     socket.on("disconnect", () => {
       console.log("Disconnected from Socket.IO server");
     });
-    
+
     const token = Cookies.get("jwt");
     if (!token) return setIsLoading(false);
 
@@ -87,13 +87,13 @@ const Publish = () => {
       alert("Error: Course ID is missing.");
       return;
     }
-  
+
     try {
       console.log("Deleting course:", courseId);
       const response = await axios.delete(`http://localhost:8082/api/courses/delete/${courseId}`, {
         withCredentials: true,
       });
-  
+
       if (response.status === 200) {
         alert("Course deleted successfully!");
         setPublishedCourses((prev) => prev.filter((course) => course._id !== courseId));
@@ -111,7 +111,7 @@ const Publish = () => {
       alert("Error: Course data is missing.");
       return;
     }
-  
+
     try {
       const requestData = {
         userId: course.userId,
@@ -124,12 +124,12 @@ const Publish = () => {
         topic: course.topic,
         chapters: course.chapters || [],
       };
-  
+
       const response = await axios.post("http://localhost:8082/api/courses/add", requestData, {
         headers: { "Content-Type": "application/json" },
         withCredentials: true,
       });
-  
+
       if (response.status === 201) {
         setShowPublishModal(false);
         alert("Course published successfully!");
@@ -150,7 +150,7 @@ const Publish = () => {
       }
     }
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-100">
       <NavBar />
@@ -163,7 +163,7 @@ const Publish = () => {
             className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-all"
           >
             Publish
-          </button> 
+          </button>
         </div>
 
 
@@ -218,7 +218,7 @@ const CourseSection = ({
   expandedCourse,
   setExpandedCourse,
   handleDeleteCourse,
-  isMine, 
+  isMine,
 }) => (
   <div className="mb-8">
     <h3 className="text-2xl font-semibold text-gray-900 mb-4">{title}</h3>
@@ -232,7 +232,7 @@ const CourseSection = ({
           expandedCourse={expandedCourse}
           setExpandedCourse={setExpandedCourse}
           handleDeleteCourse={handleDeleteCourse}
-          isMine={isMine} 
+          isMine={isMine}
         />
       ))
     )}
@@ -254,7 +254,7 @@ const CourseCard = ({
 
       navigate("/viewlayout", { state: { course, source: "publishedRes" } });
     } else {
-   
+
       navigate("/viewlayout", { state: { course, source: "othersRes" } });
     }
   };

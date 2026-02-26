@@ -5,8 +5,9 @@ dotenv.config();
 
 const apiKey = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-const youtubeKey = process.env.youtubeKey;
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+const youtubeKey = process.env.youtubeKey || process.env.YOUTUBE_API_KEY;
+
 
 exports.generateLayout = async (req, res) => {
   try {
@@ -44,9 +45,10 @@ exports.generateLayout = async (req, res) => {
 
     const result = await model.generateContent(prompt);
     let responseText = await result.response.text();
-    responseText2 = responseText.replace(/```json|```/g, "").trim();
+    const responseText2 = responseText.replace(/```json|```/g, "").trim();
 
-    
+
+
 
     try {
       const generatedLayout = JSON.parse(responseText2);
@@ -115,7 +117,7 @@ exports.generateContent = async (req, res) => {
       });
     }
 
-   
+
     let videoResults = [];
     if (generatedContent.keywords && generatedContent.keywords.length > 0) {
       for (const keyword of generatedContent.keywords) {
@@ -138,7 +140,10 @@ exports.generateContent = async (req, res) => {
       }
     }
 
+    console.log(`Found ${videoResults.length} videos for keywords`);
+
     return res.status(200).json({
+
       content: generatedContent.content,
       videos: videoResults,
     });
