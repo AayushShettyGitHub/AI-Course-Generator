@@ -16,7 +16,7 @@ function SignIn({ toggleAuthMode }) {
     try {
       console.log(email, password)
       const response = await axios.post(
-        "http://localhost:8082/auth/login",
+        "https://ai-course-generator-ples.onrender.com/auth/login",
         { email, password },
         { withCredentials: true }
       );

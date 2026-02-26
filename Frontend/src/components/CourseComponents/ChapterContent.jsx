@@ -29,7 +29,7 @@ const ChapterContent = () => {
     setError(null);
     try {
       const response = await axios.post(
-        "http://localhost:8082/api/geminiContent",
+        "https://ai-course-generator-ples.onrender.com/api/geminiContent",
         { chapter },
         { headers: { "Content-Type": "application/json" }, withCredentials: true }
       );
@@ -49,7 +49,7 @@ const ChapterContent = () => {
     setError(null);
     try {
       const response = await axios.post(
-        "http://localhost:8082/api/quiz",
+        "https://ai-course-generator-ples.onrender.com/api/quiz",
         { topic: chapter.chapterName, difficulty: "medium", noOfQuestions: 5 },
         { headers: { "Content-Type": "application/json" }, withCredentials: true }
       );

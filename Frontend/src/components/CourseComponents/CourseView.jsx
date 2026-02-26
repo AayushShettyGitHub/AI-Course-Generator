@@ -26,7 +26,7 @@ const CourseView = () => {
 
         if (userId) {
 
-          fetch(`http://localhost:8082/api/getUser?id=${userId}`, {
+          fetch(`https://ai-course-generator-ples.onrender.com/api/getUser?id=${userId}`, {
             method: 'GET',
             credentials: 'include',
             headers: {
@@ -46,7 +46,7 @@ const CourseView = () => {
             });
 
 
-          fetch(`http://localhost:8082/api/getCourse/${userId}`, {
+          fetch(`https://ai-course-generator-ples.onrender.com/api/getCourse/${userId}`, {
             method: 'GET',
             credentials: 'include',
             headers: {
@@ -78,7 +78,7 @@ const CourseView = () => {
 
   const handleDeleteCourse = async (courseId) => {
     try {
-      const response = await fetch(`http://localhost:8082/api/deleteCourse/${courseId}`, {
+      const response = await fetch(`https://ai-course-generator-ples.onrender.com/api/deleteCourse/${courseId}`, {
         method: "DELETE",
         credentials: "include",
         headers: {
@@ -90,7 +90,7 @@ const CourseView = () => {
         alert("Course Deleted");
 
 
-        const updatedCourses = await fetch(`http://localhost:8082/api/getCourse/${user?._id}`, {
+        const updatedCourses = await fetch(`https://ai-course-generator-ples.onrender.com/api/getCourse/${user?._id}`, {
           method: "GET",
           credentials: "include",
           headers: {

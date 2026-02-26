@@ -15,7 +15,7 @@ const Layout = () => {
 
   const saveCourse = async () => {
     try {
-      await axios.post("http://localhost:8082/api/saveCourse", courseData, {
+      await axios.post("https://ai-course-generator-ples.onrender.com/api/saveCourse", courseData, {
         headers: {
           'Content-Type': 'application/json',
         },

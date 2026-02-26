@@ -12,7 +12,7 @@ function ResetPass() {
   e.preventDefault();
   try {
     const res = await axios.post(
-      "http://localhost:8082/auth/reset-password",
+      "https://ai-course-generator-ples.onrender.com/auth/reset-password",
       { newPassword },
       { withCredentials: true } // cookie sent automatically
     );

@@ -64,7 +64,7 @@ function GenerateCourse({ onGenerate }) {
   
       console.log("Request Data:", finalFormData);
   
-      const response = await axios.post("http://localhost:8082/api/geminiLayout", finalFormData,{
+      const response = await axios.post("https://ai-course-generator-ples.onrender.com/api/geminiLayout", finalFormData,{
         headers: {
           'Content-Type': 'application/json',
         },

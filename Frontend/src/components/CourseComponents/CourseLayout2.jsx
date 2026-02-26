@@ -18,7 +18,7 @@ const CourseLayout2 = () => {
 
     if (!course && courseId) {
       axios
-        .get(`http://localhost:8082/api/courses/${courseId}`)
+        .get(`https://ai-course-generator-ples.onrender.com/api/courses/${courseId}`)
         .then((res) => {
           setCourse(res.data);
         })

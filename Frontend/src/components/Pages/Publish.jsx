@@ -27,7 +27,7 @@ const Publish = () => {
   };
 
   useEffect(() => {
-    const socket = io("http://localhost:8082");
+    const socket = io("https://ai-course-generator-ples.onrender.com");
     socket.on("connect", () => {
       console.log("Connected to Socket.IO server with ID:", socket.id);
     });
@@ -50,18 +50,18 @@ const Publish = () => {
 
     const fetchUserData = async () => {
       try {
-        const userRes = await axios.get(`http://localhost:8082/api/getUser?id=${userId}`, { withCredentials: true });
+        const userRes = await axios.get(`https://ai-course-generator-ples.onrender.com/api/getUser?id=${userId}`, { withCredentials: true });
         setUser(userRes.data);
 
 
-        const publishedRes = await axios.get(`http://localhost:8082/api/courses/mine?userId=${userId}`, { withCredentials: true });
+        const publishedRes = await axios.get(`https://ai-course-generator-ples.onrender.com/api/courses/mine?userId=${userId}`, { withCredentials: true });
         setPublishedCourses(publishedRes.data || []);
         console.log("Published:", publishedRes.data);
 
-        const otherRes = await axios.get(`http://localhost:8082/api/courses/others?userId=${userId}`, { withCredentials: true });
+        const otherRes = await axios.get(`https://ai-course-generator-ples.onrender.com/api/courses/others?userId=${userId}`, { withCredentials: true });
         setOtherCourses(otherRes.data || []);
         console.log("Other:", otherRes.data);
-        const unpublishedRes = await axios.get(`http://localhost:8082/api/getCourse/${userId}`, { withCredentials: true });
+        const unpublishedRes = await axios.get(`https://ai-course-generator-ples.onrender.com/api/getCourse/${userId}`, { withCredentials: true });
         setUnpublishedCourses(unpublishedRes.data?.filter(course => !course.published) || []);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -90,7 +90,7 @@ const Publish = () => {
 
     try {
       console.log("Deleting course:", courseId);
-      const response = await axios.delete(`http://localhost:8082/api/courses/delete/${courseId}`, {
+      const response = await axios.delete(`https://ai-course-generator-ples.onrender.com/api/courses/delete/${courseId}`, {
         withCredentials: true,
       });
 
@@ -125,7 +125,7 @@ const Publish = () => {
         chapters: course.chapters || [],
       };
 
-      const response = await axios.post("http://localhost:8082/api/courses/add", requestData, {
+      const response = await axios.post("https://ai-course-generator-ples.onrender.com/api/courses/add", requestData, {
         headers: { "Content-Type": "application/json" },
         withCredentials: true,
       });
@@ -135,7 +135,7 @@ const Publish = () => {
         alert("Course published successfully!");
 
         const updatedPublishedCourses = await axios.get(
-          `http://localhost:8082/api/courses/mine?userId=${course.userId._id}`,
+          `https://ai-course-generator-ples.onrender.com/api/courses/mine?userId=${course.userId._id}`,
           { withCredentials: true }
         );
         setPublishedCourses(updatedPublishedCourses.data || []);

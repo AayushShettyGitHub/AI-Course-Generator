@@ -24,7 +24,7 @@ const ProfileSwitch = () => {
         const userId = decodedToken?.userId;
 
         if (userId) {
-          fetch(`http://localhost:8082/api/getUser?id=${userId}`, {
+          fetch(`https://ai-course-generator-ples.onrender.com/api/getUser?id=${userId}`, {
             method: 'GET',
             credentials: 'include',
             headers: {

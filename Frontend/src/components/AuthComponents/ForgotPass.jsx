@@ -13,7 +13,7 @@ function ForgotPass() {
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:8082/auth/forgot-password", { email });
+      const res = await axios.post("https://ai-course-generator-ples.onrender.com/auth/forgot-password", { email });
       setMessage(res.data.message);
       setStep("otp");
       setError("");
@@ -26,7 +26,7 @@ function ForgotPass() {
   e.preventDefault();
   try {
     const res = await axios.post(
-      "http://localhost:8082/auth/verify-otp",
+      "https://ai-course-generator-ples.onrender.com/auth/verify-otp",
       { email, otp },
       { withCredentials: true } // send cookie
     );

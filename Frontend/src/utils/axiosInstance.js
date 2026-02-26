@@ -3,7 +3,7 @@ import Cookies from "cookie-js";
 
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8082/api/auth", 
+  baseURL: "https://ai-course-generator-ples.onrender.com/api/auth", 
   withCredentials: true, 
 });
 

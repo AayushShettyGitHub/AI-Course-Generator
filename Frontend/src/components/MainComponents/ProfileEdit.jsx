@@ -44,7 +44,7 @@ const ProfileEdit = ({ user, onCancel }) => {
         email: user?.email,
       };
 
-      const response = await axios.post("http://localhost:8082/api/update", dataToSend, {
+      const response = await axios.post("https://ai-course-generator-ples.onrender.com/api/update", dataToSend, {
         withCredentials: true,
         headers: { 'Content-Type': 'application/json' },
       });
