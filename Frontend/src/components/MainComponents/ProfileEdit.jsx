@@ -66,7 +66,8 @@ const ProfileEdit = ({ user, onCancel }) => {
       <div className="flex items-center space-x-4">
         <div className="avatar">
           <div className="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-            <img src={formData.profileImage || "/default-avatar.png"} alt="Avatar Preview" className="object-cover" />
+            <img src={formData.profileImage || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"} alt="Avatar Preview" className="object-cover" />
+
           </div>
         </div>
         <input

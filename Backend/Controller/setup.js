@@ -29,10 +29,11 @@ exports.verifyOtp = async (req, res) => {
     res
       .cookie('resetToken', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Strict',
+        secure: true,
+        sameSite: 'none',
         maxAge: 10 * 60 * 1000,
       })
+
       .status(200)
       .json({ message: 'OTP verified successfully' });
   } catch (error) {
