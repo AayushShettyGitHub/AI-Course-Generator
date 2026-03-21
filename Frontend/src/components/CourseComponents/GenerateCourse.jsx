@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
+import config from "../../config";
 
 const decodeJWT = (token) => {
   const payload = token.split('.')[1];
@@ -64,7 +65,7 @@ function GenerateCourse({ onGenerate }) {
   
       console.log("Request Data:", finalFormData);
   
-      const response = await axios.post("https://ai-course-generator-ples.onrender.com/api/geminiLayout", finalFormData,{
+      const response = await axios.post(`${config.API_BASE_URL}/api/geminiLayout`, finalFormData,{
         headers: {
           'Content-Type': 'application/json',
         },
@@ -91,96 +92,102 @@ function GenerateCourse({ onGenerate }) {
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 container mx-auto px-4 py-6 pt-28">
-        <div className="flex justify-center mb-10">
-          <ul className="steps steps-horizontal lg:steps-horizontal w-full max-w-3xl">
-            <li className={`step ${step >= 0 ? "step-primary" : ""}`}>Category</li>
-            <li className={`step ${step >= 1 ? "step-primary" : ""}`}>Topic</li>
-            <li className={`step ${step >= 2 ? "step-primary" : ""}`}>Customize</li>
+        <div className="flex justify-center mb-12">
+          <ul className="steps w-full max-w-4xl">
+            <li className={`step ${step >= 0 ? "step-primary font-bold" : "text-gray-400"}`}>Category</li>
+            <li className={`step ${step >= 1 ? "step-primary font-bold" : "text-gray-400"}`}>Topic</li>
+            <li className={`step ${step >= 2 ? "step-primary font-bold" : "text-gray-400"}`}>Customize</li>
           </ul>
         </div>
 
-        <form className="bg-gray-100 p-6 rounded-lg shadow-md">
-          {step === 0 && (
-            <div>
-              <label className="block mb-2 font-medium text-gray-700">Category</label>
-              <input
-                type="text"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                placeholder="Enter Category"
-                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          )}
-          {step === 1 && (
-            <div>
-              <label className="block mb-2 font-medium text-gray-700">Topic</label>
-              <input
-                type="text"
-                name="topic"
-                value={formData.topic}
-                onChange={handleChange}
-                placeholder="Enter Topic"
-                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          )}
-          {step === 2 && (
-            <div>
-              <label className="block mb-2 font-medium text-gray-700">Customize Options</label>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Difficulty</label>
-                <select
-                  name="difficulty"
-                  value={formData.difficulty}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select Difficulty</option>
-                  <option value="Beginner">Beginner</option>
-                  <option value="Intermediate">Intermediate</option>
-                  <option value="Advanced">Advanced</option>
-                </select>
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Duration (in hours)</label>
+        <div className="max-w-3xl mx-auto">
+          <form className="bg-white p-10 rounded-2xl shadow-xl border border-slate-50 transition-all">
+            {step === 0 && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <label className="block mb-3 text-lg font-semibold text-slate-800">What category does your course fall into?</label>
                 <input
-                  type="number"
-                  name="duration"
-                  value={formData.duration}
+                  type="text"
+                  name="category"
+                  value={formData.category}
                   onChange={handleChange}
-                  placeholder="Enter Duration"
-                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g. Technology, Design, Business"
+                  className="w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 border-slate-200 transition-all"
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Number of Chapters</label>
+            )}
+            {step === 1 && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <label className="block mb-3 text-lg font-semibold text-slate-800">What specific topic do you want to master?</label>
                 <input
-                  type="number"
-                  name="noOfChapters"
-                  value={formData.noOfChapters}
+                  type="text"
+                  name="topic"
+                  value={formData.topic}
                   onChange={handleChange}
-                  placeholder="Enter Number of Chapters"
-                  className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g. React.js for Beginners, Advanced Physics"
+                  className="w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 border-slate-200 transition-all"
                 />
               </div>
-              
-            </div>
-          )}
-        </form>
+            )}
+            {step === 2 && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+                <label className="block mb-2 text-lg font-semibold text-slate-800">Customization</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-500 mb-2">Difficulty Level</label>
+                    <select
+                      name="difficulty"
+                      value={formData.difficulty}
+                      onChange={handleChange}
+                      className="w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 border-slate-200 transition-all bg-white"
+                    >
+                      <option value="">Select Level</option>
+                      <option value="Beginner">Beginner</option>
+                      <option value="Intermediate">Intermediate</option>
+                      <option value="Advanced">Advanced</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-500 mb-2">Duration (Total Hours)</label>
+                    <input
+                      type="number"
+                      name="duration"
+                      value={formData.duration}
+                      onChange={handleChange}
+                      placeholder="e.g. 10"
+                      className="w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 border-slate-200 transition-all"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-slate-500 mb-2">Number of Chapters</label>
+                    <input
+                      type="number"
+                      name="noOfChapters"
+                      value={formData.noOfChapters}
+                      onChange={handleChange}
+                      placeholder="e.g. 5"
+                      className="w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 border-slate-200 transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </form>
 
-        <div className="flex justify-between mt-6">
-          <button
-            className={`btn btn-primary ${step === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
-            onClick={handlePrev}
-            disabled={step === 0}
-          >
-            Prev
-          </button>
-          <button className="btn btn-primary" onClick={handleNext}>
-            {step === 2 ? "Generate" : "Next"}
-          </button>
+          <div className="flex justify-between items-center mt-10">
+            <button
+              className={`btn btn-ghost px-8 rounded-xl ${step === 0 ? "opacity-0 invisible" : ""}`}
+              onClick={handlePrev}
+              disabled={step === 0}
+            >
+              Previous
+            </button>
+            <button 
+              className="btn btn-primary btn-lg px-12 rounded-xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all" 
+              onClick={handleNext}
+            >
+              {step === 2 ? "Generate Course" : "Continue"}
+            </button>
+          </div>
         </div>
       </main>
     </div>

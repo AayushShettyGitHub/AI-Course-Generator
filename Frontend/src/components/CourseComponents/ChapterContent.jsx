@@ -1,14 +1,15 @@
-import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import NavBar from "../MainComponents/NavBar";
 import Footer from "../MainComponents/Footer";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import config from "../../config";
 
 const ChapterContent = () => {
   const location = useLocation();
-  const { chapter } = location.state;
-  console.log("Chapter received:", chapter);
+  const { chapter, courseId, isPublished } = location.state || {};
+  const navigate = useNavigate();
 
   const [generatedContent, setGeneratedContent] = useState([]);
   const [generatedVideos, setGeneratedVideos] = useState([]);
@@ -20,22 +21,56 @@ const ChapterContent = () => {
   const [openSections, setOpenSections] = useState({});
   const [activeTab, setActiveTab] = useState("content"); // "content", "videos", "quiz"
 
-  const toggleSection = (index) => {
-    setOpenSections((prev) => ({ ...prev, [index]: !prev[index] }));
+  useEffect(() => {
+    if (chapter?.detailedContent?.length > 0) {
+      setGeneratedContent(chapter.detailedContent);
+    }
+    if (chapter?.videos?.length > 0) {
+      setGeneratedVideos(chapter.videos);
+    }
+  }, [chapter]);
+
+  const handleExit = () => {
+    navigate(-1);
   };
 
   const generateContent = async () => {
+    // If already generated, don't call API again (except for Quiz as per user request)
+    if (generatedContent.length > 0) {
+      setActiveTab("content");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
       const response = await axios.post(
-        "https://ai-course-generator-ples.onrender.com/api/geminiContent",
+        `${config.API_BASE_URL}/api/geminiContent`,
         { chapter },
         { headers: { "Content-Type": "application/json" }, withCredentials: true }
       );
-      setGeneratedContent(Array.isArray(response.data.content) ? response.data.content : []);
-      setGeneratedVideos(Array.isArray(response.data.videos) ? response.data.videos : []);
+      
+      const newContent = Array.isArray(response.data.content) ? response.data.content : [];
+      const newVideos = Array.isArray(response.data.videos) ? response.data.videos : [];
+      
+      setGeneratedContent(newContent);
+      setGeneratedVideos(newVideos);
       setActiveTab("content");
+
+      // SAVE to Database
+      if (courseId && chapter?._id) {
+        const updateEndpoint = isPublished 
+          ? `${config.API_BASE_URL}/api/courses/updateChapter` 
+          : `${config.API_BASE_URL}/api/updateChapter`;
+        
+        await axios.post(updateEndpoint, {
+          courseId,
+          chapterId: chapter._id,
+          detailedContent: newContent,
+          videos: newVideos
+        }, { withCredentials: true });
+      }
+
     } catch (err) {
       setError("Error generating content. Please try again.");
       console.error("Error generating content:", err);
@@ -49,7 +84,7 @@ const ChapterContent = () => {
     setError(null);
     try {
       const response = await axios.post(
-        "https://ai-course-generator-ples.onrender.com/api/quiz",
+        `${config.API_BASE_URL}/api/quiz`,
         { topic: chapter.chapterName, difficulty: "medium", noOfQuestions: 5 },
         { headers: { "Content-Type": "application/json" }, withCredentials: true }
       );
@@ -87,6 +122,7 @@ const ChapterContent = () => {
 
   // Format chapter content dynamically: paragraphs, bullets, bold (**text**)
   const renderChapterContent = () => {
+    if (!chapter || !chapter.content) return <p className="text-slate-400 italic">No summary available.</p>;
     return chapter.content
       .split("\n")
       .filter((line) => line.trim() !== "")
@@ -122,48 +158,89 @@ const ChapterContent = () => {
     return score;
   };
 
+  const toggleSection = (index) => {
+    setOpenSections((prev) => ({ ...prev, [index]: !prev[index] }));
+  };
+
+  if (!chapter) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-10">
+        <div className="text-center p-12 bg-white rounded-3xl shadow-xl border border-slate-100 max-w-sm">
+           <div className="text-primary text-5xl mb-6">⚠️</div>
+           <h3 className="text-2xl font-black text-slate-800 mb-2">No Content</h3>
+           <p className="text-slate-500 mb-8">This chapter data is missing. Please go back and try again.</p>
+           <button onClick={() => navigate("/")} className="btn btn-primary btn-block">Go Home</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-100 pt-[25vh]">
+    <div className="min-h-screen bg-slate-50 pt-[15vh]">
       <NavBar />
-      <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-16 mb-20">
-        <h1 className="text-3xl text-center font-bold text-gray-800 mb-6">{chapter.chapterName}</h1>
+      <div className="max-w-4xl mx-auto p-10 bg-white shadow-xl rounded-3xl mt-16 mb-20 border border-slate-100 animate-in fade-in duration-700">
+        <div className="flex justify-between items-center mb-8">
+          <button 
+            onClick={handleExit}
+            className="btn btn-ghost btn-sm text-slate-400 hover:text-primary gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Path
+          </button>
+          <div className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
+            {isPublished ? "Public Course" : "Private Draft"}
+          </div>
+        </div>
+        
+        <h1 className="text-4xl text-center font-extrabold text-slate-900 mb-8 tracking-tight">{chapter.chapterName}</h1>
 
         {/* Chapter content */}
-        {renderChapterContent()}
+        <div className="prose prose-slate max-w-none mb-10 text-slate-700 leading-relaxed">
+          {renderChapterContent()}
+        </div>
 
-        {/* Generate Detailed Content Button */}
-        <button
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg mt-6 transition-all"
-          onClick={generateContent}
-          disabled={loading}
-        >
-          {loading && activeTab === "content" ? "Generating..." : "Generate Detailed Content"}
-        </button>
+        <div className="flex flex-wrap items-center justify-between gap-6 border-t border-slate-100 pt-8 mt-10">
+          {/* Tabs */}
+          <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-1">
+            <button
+              className={`px-6 py-2.5 rounded-xl font-bold transition-all text-sm ${activeTab === "content" ? "bg-white text-primary shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+              onClick={() => setActiveTab("content")}
+            >
+              Content
+            </button>
+            <button
+              className={`px-6 py-2.5 rounded-xl font-bold transition-all text-sm ${activeTab === "videos" ? "bg-white text-primary shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+              onClick={() => setActiveTab("videos")}
+            >
+              Videos
+            </button>
+            <button
+              className={`px-6 py-2.5 rounded-xl font-bold transition-all text-sm ${activeTab === "quiz" ? "bg-white text-primary shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+              onClick={generateQuiz}
+              disabled={loading}
+            >
+              {loading && activeTab === "quiz" ? <span className="loading loading-spinner loading-xs"></span> : "Quiz"}
+            </button>
+          </div>
 
-        {error && <p className="text-red-500 mt-4">{error}</p>}
-
-        {/* Tabs */}
-        <div className="flex gap-4 mt-6">
           <button
-            className={`px-4 py-2 rounded-lg ${activeTab === "content" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
-            onClick={() => setActiveTab("content")}
-          >
-            Content
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg ${activeTab === "videos" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
-            onClick={() => setActiveTab("videos")}
-          >
-            Videos
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg ${activeTab === "quiz" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
-            onClick={generateQuiz}
+            className={`btn rounded-xl shadow-lg px-8 transition-all ${generatedContent.length > 0 ? "btn-ghost text-primary hover:bg-primary/5" : "btn-primary shadow-primary/20"}`}
+            onClick={generateContent}
             disabled={loading}
           >
-            {loading && activeTab === "quiz" ? "Generating..." : "Quiz"}
+            {loading && activeTab === "content" ? (
+              <span className="loading loading-spinner loading-sm"></span>
+            ) : generatedContent.length > 0 ? "Content Loaded" : "Generate Detailed Content"}
           </button>
         </div>
+
+        {error && (
+          <div className="mt-6 p-4 bg-error/10 text-error rounded-xl border border-error/20 text-sm">
+            {error}
+          </div>
+        )}
 
         {/* Content Tab */}
         {activeTab === "content" && generatedContent.length > 0 && (
@@ -250,9 +327,9 @@ const ChapterContent = () => {
             {quizQuestions.map((q, index) => {
               const selected = selectedOptions[index];
               return (
-                <div key={index} className="p-4 border rounded-lg shadow-sm bg-gray-50 mb-4">
-                  <p className="font-semibold text-gray-800">{index + 1}. {q.question}</p>
-                  <ul className="mt-2 list-disc list-inside">
+                <div key={index} className="p-6 border border-slate-100 rounded-2xl shadow-sm bg-slate-50/50 mb-6 transition-all hover:bg-slate-50">
+                  <p className="font-bold text-slate-800 text-lg mb-4">{index + 1}. {q.question}</p>
+                  <ul className="grid grid-cols-1 gap-3">
                     {q.options.map((opt, i) => {
                       const isSelected = selected === opt;
                       const isCorrect = selected && opt === q.answer;
@@ -261,8 +338,15 @@ const ChapterContent = () => {
                       return (
                         <li
                           key={i}
-                          className={`text-gray-700 cursor-pointer p-1 rounded-md ${isCorrect ? "bg-green-200" : isWrong ? "bg-red-200" : "hover:bg-gray-200"
-                            }`}
+                          className={`cursor-pointer p-4 rounded-xl border transition-all font-medium ${
+                            isCorrect 
+                              ? "bg-success/10 border-success text-success shadow-sm shadow-success/10" 
+                              : isWrong 
+                                ? "bg-error/10 border-error text-error shadow-sm shadow-error/10" 
+                                : isSelected 
+                                  ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" 
+                                  : "bg-white border-slate-200 text-slate-600 hover:border-primary/50 hover:bg-slate-50"
+                          }`}
                           onClick={() => !selected && handleOptionSelect(index, opt)}
                         >
                           {opt}
@@ -276,15 +360,16 @@ const ChapterContent = () => {
 
             {/* Score and Retry */}
             {quizCompleted && (
-              <div className="mt-4 p-4 border rounded-lg bg-gray-100">
-                <p className="font-semibold text-gray-800">
-                  You scored {computeScore()} / {quizQuestions.length}
+              <div className="mt-10 p-8 rounded-3xl bg-primary/5 border border-primary/10 text-center animate-in zoom-in duration-500">
+                <div className="text-sm font-bold text-primary uppercase tracking-widest mb-2">Quiz Completed</div>
+                <p className="text-3xl font-extrabold text-slate-900 mb-6">
+                  You scored <span className="text-primary italic">{computeScore()}</span> / {quizQuestions.length}
                 </p>
                 <button
-                  className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                  className="btn btn-primary px-10 rounded-xl shadow-lg shadow-primary/20"
                   onClick={generateQuiz}
                 >
-                  Retry Quiz
+                  Try Again
                 </button>
               </div>
             )}

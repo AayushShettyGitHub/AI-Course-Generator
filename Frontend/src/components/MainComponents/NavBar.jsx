@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { Link, useNavigate } from 'react-router-dom';
+import config from '../../config';
 
 function NavBar() {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ function NavBar() {
         const userId = decodedToken?.userId;
 
         if (userId) {
-          fetch(`https://ai-course-generator-ples.onrender.com/api/getUser?id=${userId}`, {
+          fetch(`${config.API_BASE_URL}/api/getUser?id=${userId}`, {
             method: 'GET',
             credentials: 'include',
             headers: {
@@ -77,7 +78,9 @@ function NavBar() {
             </svg>
           </label>
 
-          <a className="btn btn-ghost text-xl">CoursiFY</a>
+          <a className="btn btn-ghost text-2xl font-bold tracking-tight">
+            <span className="text-primary">Coursi</span>FY
+          </a>
 
 
           <div className="navbar-center hidden lg:flex flex-1 justify-center">

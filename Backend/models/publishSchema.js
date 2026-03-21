@@ -14,6 +14,19 @@ const ChapterSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  detailedContent: [
+    {
+      title: String,
+      explanation: String,
+      code: String,
+    },
+  ],
+  videos: [
+    {
+      videoTitle: String,
+      videoUrl: String,
+    },
+  ],
 });
 
 const courseSchema = new mongoose.Schema({
@@ -52,6 +65,27 @@ const courseSchema = new mongoose.Schema({
     required: true,
   },
   chapters: [ChapterSchema], 
+  views: {
+    type: Number,
+    default: 0,
+  },
+  ratings: [
+    {
+      userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+      rating: {
+        type: Number,
+        min: 1,
+        max: 5,
+      },
+    },
+  ],
+  averageRating: {
+    type: Number,
+    default: 0,
+  },
 }, {
   timestamps: true,
 });

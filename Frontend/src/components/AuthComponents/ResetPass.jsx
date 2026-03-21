@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import config from "../../config";
 
 function ResetPass() {
   const [newPassword, setNewPassword] = useState("");
@@ -12,7 +13,7 @@ function ResetPass() {
   e.preventDefault();
   try {
     const res = await axios.post(
-      "https://ai-course-generator-ples.onrender.com/auth/reset-password",
+      `${config.API_BASE_URL}/auth/reset-password`,
       { newPassword },
       { withCredentials: true } // cookie sent automatically
     );

@@ -12,12 +12,13 @@ function Hero() {
           alt=""
         />
         <div>
-          <h1 className="text-5xl font-bold">Welcome Curious Learner!</h1>
-          <p className="py-6">
-            Welcome to Coursify lets get started with your course generation and explore the infinite possibilities to learn using the power of AI.
-
+          <h1 className="text-6xl font-extrabold tracking-tight leading-tight">
+            Welcome <span className="text-primary">Curious Learner!</span>
+          </h1>
+          <p className="py-8 text-lg text-gray-600 leading-relaxed max-w-lg">
+            Coursify empowers you to master any subject by harnessing AI to generate structured, engaging, and personalized courses.
           </p>
-          <button className="btn btn-primary" onClick={() => navigate("/generatepage")}>
+          <button className="btn btn-primary btn-lg px-8 shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all" onClick={() => navigate("/generatepage")}>
             Get Started
           </button>
         </div>

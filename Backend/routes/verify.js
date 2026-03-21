@@ -4,7 +4,7 @@ const { registerUser, updateUser, loginUser, googleSignIn, logout } = require(".
 const { getData } = require("../Controller/getData");
 const { generateLayout, generateContent } = require("../services/AiModel");
 const { generateQuiz } = require("../services/Quiz");
-const { saveCourse, getCourse, deleteCourse } = require("../Controller/courseStore");
+const { saveCourse, getCourse, deleteCourse, updateChapter } = require("../Controller/courseStore");
 const { getVideo } = require("../Controller/getVideo");
 
 const router = express.Router();
@@ -22,6 +22,7 @@ router.post("/geminiLayout", generateLayout);
 router.post("/geminiContent", generateContent);
 router.post("/quiz", generateQuiz);
 router.post("/saveCourse", saveCourse);
+router.post("/updateChapter", updateChapter);
 router.post("/getVideo", getVideo);
 router.delete("/deleteCourse/:courseId", deleteCourse);
 

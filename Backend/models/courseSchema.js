@@ -14,6 +14,19 @@ const ChapterSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  detailedContent: [
+    {
+      title: String,
+      explanation: String,
+      code: String,
+    },
+  ],
+  videos: [
+    {
+      videoTitle: String,
+      videoUrl: String,
+    },
+  ],
 });
 
 const CourseSchema = new mongoose.Schema(

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import config from "../../config";
 
 function ForgotPass() {
   const [email, setEmail] = useState("");
@@ -13,7 +14,7 @@ function ForgotPass() {
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("https://ai-course-generator-ples.onrender.com/auth/forgot-password", { email });
+      const res = await axios.post(`${config.API_BASE_URL}/auth/forgot-password`, { email });
       setMessage(res.data.message);
       setStep("otp");
       setError("");
@@ -26,7 +27,7 @@ function ForgotPass() {
   e.preventDefault();
   try {
     const res = await axios.post(
-      "https://ai-course-generator-ples.onrender.com/auth/verify-otp",
+      `${config.API_BASE_URL}/auth/verify-otp`,
       { email, otp },
       { withCredentials: true } // send cookie
     );

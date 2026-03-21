@@ -3,6 +3,7 @@ import Cookies from 'js-cookie';
 import ProfilePage from './ProfilePage';
 import ProfileEdit from './ProfileEdit';
 import NavBar from './NavBar';
+import config from '../../config';
 
 const ProfileSwitch = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -24,7 +25,7 @@ const ProfileSwitch = () => {
         const userId = decodedToken?.userId;
 
         if (userId) {
-          fetch(`https://ai-course-generator-ples.onrender.com/api/getUser?id=${userId}`, {
+          fetch(`${config.API_BASE_URL}/api/getUser?id=${userId}`, {
             method: 'GET',
             credentials: 'include',
             headers: {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import config from "../../config";
 
 const ProfileEdit = ({ user, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -44,7 +45,7 @@ const ProfileEdit = ({ user, onCancel }) => {
         email: user?.email,
       };
 
-      const response = await axios.post("https://ai-course-generator-ples.onrender.com/api/update", dataToSend, {
+      const response = await axios.post(`${config.API_BASE_URL}/api/update`, dataToSend, {
         withCredentials: true,
         headers: { 'Content-Type': 'application/json' },
       });

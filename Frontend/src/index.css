@@ -1,3 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  font-family: 'Outfit', sans-serif;
+}
+
+body {
+  background-color: #f8fafc; /* Sleek, very light gray-blue background */
+  color: #1e293b;
+  min-height: 100vh;
+}
+
+/* Custom rounded corners for a premium feel */
+.card, .btn, .input {
+  border-radius: 12px !important;
+}
+
+/* Smooth transitions for interactive elements */
+.btn, .link {
+  transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
+import config from "../../config";
 
 function SignUp({ toggleAuthMode }) {
   const [formData, setFormData] = useState({
@@ -17,7 +18,7 @@ function SignUp({ toggleAuthMode }) {
   const handleSignUp = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("https://ai-course-generator-ples.onrender.com/auth/register", formData);
+      const response = await axios.post(`${config.API_BASE_URL}/auth/register`, formData);
       console.log("User signed up successfully!", response.data);
 
      
@@ -29,25 +30,27 @@ function SignUp({ toggleAuthMode }) {
   };
 
   return (
-    <div className="hero bg-base-200 min-h-screen">
-      <div className="hero-content flex-col lg:flex-row">
-        <div className="text-center lg:text-left">
-          <h1 className="text-5xl font-bold px-20">Sign Up now!</h1>
-          <p className="py-6 px-16 text-lg max-w-45">
-            Start generating courses with ease. Create your account and unlock the potential of our platform.
+    <div className="hero bg-slate-50 min-h-screen">
+      <div className="hero-content flex-col lg:flex-row gap-12">
+        <div className="text-center lg:text-left max-w-md">
+          <h1 className="text-6xl font-extrabold tracking-tight">
+            Join the <span className="text-primary italic">Future.</span>
+          </h1>
+          <p className="py-6 text-lg text-gray-500">
+            Create an account and start your personalized learning journey with AI today.
           </p>
         </div>
-        <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
-          <form className="card-body" onSubmit={handleSignUp}>
+        <div className="card bg-white w-full max-w-sm shrink-0 shadow-xl border border-slate-100">
+          <form className="card-body gap-4" onSubmit={handleSignUp}>
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Name</span>
+                <span className="label-text font-medium">Full Name</span>
               </label>
               <input
                 type="text"
                 name="name"
-                placeholder="Name"
-                className="input input-bordered"
+                placeholder="John Doe"
+                className="input input-bordered focus:input-primary"
                 value={formData.name}
                 onChange={handleChange}
                 required
@@ -55,13 +58,13 @@ function SignUp({ toggleAuthMode }) {
             </div>
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Email</span>
+                <span className="label-text font-medium">Email Address</span>
               </label>
               <input
                 type="email"
                 name="email"
-                placeholder="Email"
-                className="input input-bordered"
+                placeholder="name@example.com"
+                className="input input-bordered focus:input-primary"
                 value={formData.email}
                 onChange={handleChange}
                 required
@@ -69,28 +72,35 @@ function SignUp({ toggleAuthMode }) {
             </div>
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Password</span>
+                <span className="label-text font-medium">Password</span>
               </label>
               <input
                 type="password"
                 name="password"
-                placeholder="Password"
-                className="input input-bordered"
+                placeholder="••••••••"
+                className="input input-bordered focus:input-primary"
                 value={formData.password}
                 onChange={handleChange}
                 required
               />
             </div>
-            {error && <p className="text-red-500 mt-2">{error}</p>}
-            <div className="form-control mt-6">
-              <button type="submit" className="btn btn-primary">
-                Sign Up
+            {error && (
+              <div className="bg-error/10 text-error text-xs p-3 rounded-lg border border-error/20">
+                {error}
+              </div>
+            )}
+            <div className="form-control mt-2">
+              <button type="submit" className="btn btn-primary btn-block shadow-lg shadow-primary/20">
+                Create Account
               </button>
             </div>
           </form>
-          <button className="btn btn-link mt-4" onClick={toggleAuthMode}>
-            Already have an account? Sign In
-          </button>
+          <div className="px-8 pb-8 text-center text-sm">
+            <span className="text-gray-400">Already a member? </span>
+            <button className="text-primary font-bold hover:underline" onClick={toggleAuthMode}>
+              Sign In
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -1,9 +1,9 @@
 import axios from "axios";
 import Cookies from "cookie-js";
-
+import config from "../config";
 
 const axiosInstance = axios.create({
-  baseURL: "https://ai-course-generator-ples.onrender.com/api/auth", 
+  baseURL: `${config.API_BASE_URL}/api/auth`, 
   withCredentials: true, 
 });
 

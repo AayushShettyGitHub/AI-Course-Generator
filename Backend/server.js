@@ -12,17 +12,19 @@ const verifyRoutes = require("./routes/verify");
 const app = express();
 app.set("trust proxy", 1);
 
+const allowedOrigins = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(",") : ["http://localhost:5173"];
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173", "https://ai-course-generator-khaki.vercel.app"],
+    origin: allowedOrigins,
     credentials: true,
   },
 });
 
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
-app.use(cors({ origin: ["http://localhost:5173", "https://ai-course-generator-khaki.vercel.app"], credentials: true }));
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 
 
 app.use("/api", verifyRoutes);

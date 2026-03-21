@@ -88,3 +88,32 @@ exports.deleteCourse = async (req, res) => {
     }
 }
 
+exports.updateChapter = async (req, res) => {
+    try {
+        const { courseId, chapterId, detailedContent, videos } = req.body;
+
+        if (!courseId || !chapterId) {
+            return res.status(400).json({ message: "Course ID and Chapter ID are required" });
+        }
+
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.status(404).json({ message: "Course not found" });
+        }
+
+        const chapter = course.chapters.id(chapterId);
+        if (!chapter) {
+            return res.status(404).json({ message: "Chapter not found" });
+        }
+
+        if (detailedContent) chapter.detailedContent = detailedContent;
+        if (videos) chapter.videos = videos;
+
+        await course.save();
+
+        res.status(200).json({ message: "Chapter updated successfully", chapter });
+    } catch (error) {
+        console.error("Error updating chapter:", error);
+        res.status(500).json({ message: "Server error while updating chapter", error: error.message });
+    }
+};

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Cookies from "js-cookie";
+import config from "../../config";
 
 function SignIn({ toggleAuthMode }) {
   const [email, setEmail] = useState("");
@@ -16,7 +17,7 @@ function SignIn({ toggleAuthMode }) {
     try {
       console.log(email, password)
       const response = await axios.post(
-        "https://ai-course-generator-ples.onrender.com/auth/login",
+        `${config.API_BASE_URL}/auth/login`,
         { email, password },
         { withCredentials: true }
       );
@@ -35,24 +36,26 @@ function SignIn({ toggleAuthMode }) {
   };
 
   return (
-    <div className="hero bg-base-200 min-h-screen">
-      <div className="hero-content flex-col lg:flex-row-reverse">
-        <div className="text-center lg:text-left">
-          <h1 className="text-5xl font-bold px-20">Login now!</h1>
-          <p className="py-6 px-16 text-lg max-w-45">
-            Login to your account and start generating courses with ease.
+    <div className="hero bg-slate-50 min-h-screen">
+      <div className="hero-content flex-col lg:flex-row-reverse gap-12">
+        <div className="text-center lg:text-left max-w-md">
+          <h1 className="text-6xl font-extrabold tracking-tight">
+            Welcome <span className="text-primary italic">Back.</span>
+          </h1>
+          <p className="py-6 text-lg text-gray-500">
+            Log in to continue your journey and explore your AI-generated courses.
           </p>
         </div>
-        <div className="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
-          <form className="card-body" onSubmit={handleSignIn}>
+        <div className="card bg-white w-full max-w-sm shrink-0 shadow-xl border border-slate-100">
+          <form className="card-body gap-4" onSubmit={handleSignIn}>
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Email</span>
+                <span className="label-text font-medium">Email Address</span>
               </label>
               <input
                 type="email"
-                placeholder="email"
-                className="input input-bordered"
+                placeholder="name@example.com"
+                className="input input-bordered focus:input-primary"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -60,37 +63,43 @@ function SignIn({ toggleAuthMode }) {
             </div>
             <div className="form-control">
               <label className="label">
-                <span className="label-text">Password</span>
+                <span className="label-text font-medium">Password</span>
               </label>
               <input
                 type="password"
-                placeholder="password"
-                className="input input-bordered"
+                placeholder="••••••••"
+                className="input input-bordered focus:input-primary"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <label className="label">
+                <button
+                  type="button"
+                  className="label-text-alt link link-hover text-primary"
+                  onClick={() => navigate("/forgot-password")}
+                >
+                  Forgot password?
+                </button>
+              </label>
             </div>
             {error && (
-              <div className="text-red-500 text-sm mt-2">{error}</div>
+              <div className="bg-error/10 text-error text-xs p-3 rounded-lg border border-error/20">
+                {error}
+              </div>
             )}
-            <div className="form-control mt-6">
-              <button type="submit" className="btn btn-primary">
-                Login
+            <div className="form-control mt-2">
+              <button type="submit" className="btn btn-primary btn-block shadow-lg shadow-primary/20">
+                Sign In
               </button>
             </div>
           </form>
-          <button className="btn btn-link mt-4" onClick={toggleAuthMode}>
-            Don&apos;t have an account? Sign Up
-          </button>
-
-          <button
-            className="btn btn-link text-sm mt-2"
-            onClick={() => navigate("/forgot-password")}
-          >
-            Forgot Password?
-          </button>
-
+          <div className="px-8 pb-8 text-center text-sm">
+            <span className="text-gray-400">New here? </span>
+            <button className="text-primary font-bold hover:underline" onClick={toggleAuthMode}>
+              Create an account
+            </button>
+          </div>
         </div>
       </div>
     </div>
