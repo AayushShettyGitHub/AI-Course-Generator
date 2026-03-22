@@ -18,6 +18,7 @@ function GenerateCourse({ onGenerate }) {
     duration: "",
     noOfChapters: "",
     videos: "", 
+    description: "",
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -166,6 +167,16 @@ function GenerateCourse({ onGenerate }) {
                       onChange={handleChange}
                       placeholder="e.g. 5"
                       className="w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 border-slate-200 transition-all"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-slate-500 mb-2">Course Description (Optional)</label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
+                      placeholder="Tell us more about what you want to learn... (e.g. Focus on practical examples, avoid deep math, etc.)"
+                      className="w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 border-slate-200 transition-all h-32 resize-none"
                     />
                   </div>
                 </div>

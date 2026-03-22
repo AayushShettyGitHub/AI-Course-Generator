@@ -5,13 +5,16 @@ dotenv.config();
 
 const apiKey = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.5-flash",
+  generationConfig: { responseMimeType: "application/json" }
+});
 const youtubeKey = process.env.youtubeKey || process.env.YOUTUBE_API_KEY;
 
 
 exports.generateLayout = async (req, res) => {
   try {
-    const { category, topic, difficulty, duration, noOfChapters } = req.body;
+    const { category, topic, difficulty, duration, noOfChapters, description } = req.body;
 
     if (!category || !topic || !difficulty || !duration || !noOfChapters) {
       return res.status(400).json({
@@ -20,7 +23,7 @@ exports.generateLayout = async (req, res) => {
     }
 
     const prompt = `
-    Generate a course tutorial layout in JSON format with the following details:
+    Generate a course tutorial layout in strictly valid JSON format with the following details:
     {
       "courseName": "Provide a suitable course name",
       "description": "Provide a detailed course description",
@@ -37,18 +40,19 @@ exports.generateLayout = async (req, res) => {
         }
       ]
     }
-    Ensure that:
-    1. All strings are enclosed in double quotes.
-    2. The JSON format is strictly valid.
-    3. Each chapter includes a chapter number, name, and content.
+    
+    ${description ? `Additional User Context for this course: "${description}"` : ""}
+
+    IMPORTANT: 
+    1. Your response MUST be a single valid JSON object.
+    2. Do not include any markdown formatting like \`\`\`json.
+    3. Ensure all special characters (newlines, quotes, backslashes) in strings are properly escaped as per JSON standards.
     `;
 
     const result = await model.generateContent(prompt);
     let responseText = await result.response.text();
+    // Fallback for cases where markdown might still be present
     const responseText2 = responseText.replace(/```json|```/g, "").trim();
-
-
-
 
     try {
       const generatedLayout = JSON.parse(responseText2);
@@ -56,7 +60,7 @@ exports.generateLayout = async (req, res) => {
     } catch (parseError) {
       console.error("Error parsing the generated layout:", parseError);
       res.status(500).json({
-        message: "Failed to parse generated layout",
+        message: "Failed to parse generated layout. The AI returned an invalid format.",
         error: parseError.message,
       });
     }
@@ -86,15 +90,19 @@ exports.generateContent = async (req, res) => {
     **${chapter.content}**  
 
     Also, generate exactly **3 relevant keywords** for finding YouTube videos on this topic.
-    Ensure that:
-    - The keywords are concise and effective for YouTube searches.
-    - The response must be valid JSON in this format:
+    
+    RESPONSE REQUIREMENT:
+    Return your response as a strictly valid JSON object. 
+    Escape all special characters (especially backslashes in code snippets and double quotes) correctly.
+    Do not use markdown code blocks.
+
+    JSON Structure:
     {
       "content": [
         {
           "title": "A clear section title",
           "explanation": "A thorough and in-depth explanation",
-          "code": "If applicable, provide fully formatted code"
+          "code": "If applicable, provide fully formatted code. IMPORTANT: Escape backslashes as \\\\ and double quotes as \\\"."
         }
       ],
       "keywords": ["keyword1", "keyword2", "keyword3"]
