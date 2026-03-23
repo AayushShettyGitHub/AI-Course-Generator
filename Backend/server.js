@@ -41,15 +41,10 @@ io.on("connection", (socket) => {
   });
 });
 
-if (process.env.NODE_ENV !== "production") {
-  const port = process.env.PORT || 8082;
-  server.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-    connectToDatabase();
-  });
-} else {
-  // On Vercel, the database should be connected when the function is initialized
+const port = process.env.PORT || 8082;
+server.listen(port, () => {
+  console.log(`Server running on port ${port}`);
   connectToDatabase();
-}
+});
 
 module.exports = app;
