@@ -3,7 +3,7 @@ const config = {
 };
 
 if (import.meta.env.PROD && !import.meta.env.VITE_API_BASE_URL) {
-    config.API_BASE_URL = "https://aicg-fawn.vercel.app";
+    config.API_BASE_URL = "https://ai-course-generator-ples.onrender.com";
 }
 
 export default config;
