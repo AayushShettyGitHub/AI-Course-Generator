@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
 import NavBar from "../MainComponents/NavBar";
 import Footer from "../MainComponents/Footer";
-import config from "../../config";
 
 const CourseLayout2 = () => {
   const { courseId } = useParams();
@@ -20,8 +18,7 @@ const CourseLayout2 = () => {
 
   useEffect(() => {
     if (!course && courseId) {
-      const endpoint = isPublished ? `/api/courses/mine` : `/api/getCourse/some-id`; // This logic might need refinement depending on how we fetch a single course by ID
-      // Actually, let's keep it simple for now as it's usually passed via state
+      const endpoint = isPublished ? `/api/courses/mine` : `/api/getCourse/some-id`;
     }
   }, [course, courseId]);
 
@@ -116,8 +113,8 @@ const CourseLayout2 = () => {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                       <span className="text-primary font-black text-xs uppercase tracking-widest">Chapter 0{index + 1}</span>
-                       <div className="h-px bg-slate-100 flex-1"></div>
+                      <span className="text-primary font-black text-xs uppercase tracking-widest">Chapter 0{index + 1}</span>
+                      <div className="h-px bg-slate-100 flex-1"></div>
                     </div>
                     <h3 className="text-2xl font-bold text-slate-800 group-hover:text-primary transition-colors">
                       {chapter.chapterName}

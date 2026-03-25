@@ -1,7 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import config from "../../config";
 
 function ResetPass() {
   const [newPassword, setNewPassword] = useState("");
@@ -9,22 +8,22 @@ function ResetPass() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
- const handleReset = async (e) => {
-  e.preventDefault();
-  try {
-    const res = await axios.post(
-      `${config.API_BASE_URL}/auth/reset-password`,
-      { newPassword },
-      { withCredentials: true } // cookie sent automatically
-    );
-    setMessage(res.data.message);
-    setTimeout(() => navigate("/signin"), 3000);
-  } catch (err) {
-    setError(err.response?.data?.message || "Something went wrong");
-  }
-};
-
-
+  const handleReset = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    setError("");
+    try {
+      const res = await axiosInstance.post(
+        "/auth/reset-password",
+        { newPassword }
+      );
+      setMessage(res.data.message);
+      setTimeout(() => navigate("/signin"), 3000);
+    } catch (err) {
+      const data = err.response?.data;
+      setError(data?.message || data?.error || "Password reset failed. Please try again.");
+    }
+  };
 
   return (
     <div className="hero min-h-screen bg-base-200">

@@ -1,6 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
-import config from "../../config";
+import axiosInstance from "../../utils/axiosInstance";
 
 const ProfileEdit = ({ user, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -45,8 +44,7 @@ const ProfileEdit = ({ user, onCancel }) => {
         email: user?.email,
       };
 
-      const response = await axios.post(`${config.API_BASE_URL}/api/update`, dataToSend, {
-        withCredentials: true,
+      const response = await axiosInstance.post("/api/update", dataToSend, {
         headers: { 'Content-Type': 'application/json' },
       });
 
@@ -56,7 +54,8 @@ const ProfileEdit = ({ user, onCancel }) => {
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Failed to update profile.");
+      const errorMessage = error.response?.data?.message || "Failed to update profile. Please try again.";
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }

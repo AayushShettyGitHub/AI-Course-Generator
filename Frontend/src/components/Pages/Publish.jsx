@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
@@ -15,7 +15,7 @@ const Publish = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [expandedCourse, setExpandedCourse] = useState(null);
-  const [activeTab, setActiveTab] = useState("gallery"); // "gallery", "dashboard"
+  const [activeTab, setActiveTab] = useState("gallery");
   const [filterCategory, setFilterCategory] = useState("");
 
   const navigate = useNavigate();
@@ -44,16 +44,16 @@ const Publish = () => {
 
     const fetchUserData = async () => {
       try {
-        const userRes = await axios.get(`${config.API_BASE_URL}/api/getUser?id=${userId}`, { withCredentials: true });
+        const userRes = await axiosInstance.get(`/api/getUser?id=${userId}`);
         setUser(userRes.data);
 
-        const publishedRes = await axios.get(`${config.API_BASE_URL}/api/courses/mine?userId=${userId}`, { withCredentials: true });
+        const publishedRes = await axiosInstance.get(`/api/courses/mine?userId=${userId}`);
         setPublishedCourses(publishedRes.data || []);
 
-        const otherRes = await axios.get(`${config.API_BASE_URL}/api/courses/others?userId=${userId}`, { withCredentials: true });
+        const otherRes = await axiosInstance.get(`/api/courses/others?userId=${userId}`);
         setOtherCourses(otherRes.data || []);
 
-        const unpublishedRes = await axios.get(`${config.API_BASE_URL}/api/getCourse/${userId}`, { withCredentials: true });
+        const unpublishedRes = await axiosInstance.get(`/api/getCourse/${userId}`);
         setUnpublishedCourses(unpublishedRes.data?.filter(course => !course.published) || []);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -78,23 +78,23 @@ const Publish = () => {
 
   const handleRateCourse = async (courseId, rating) => {
     try {
-      const response = await axios.post(`${config.API_BASE_URL}/api/courses/rate`, {
+      const response = await axiosInstance.post("/api/courses/rate", {
         courseId,
         userId: user._id,
         rating
-      }, { withCredentials: true });
-      
+      });
+
       const { averageRating } = response.data;
       setOtherCourses(prev => prev.map(c => c._id === courseId ? { ...c, averageRating } : c));
       alert("Thanks for rating!");
     } catch (error) {
-      alert(error.response?.data?.message || "Error rating course");
+      alert(error.response?.data?.message || error.response?.data?.error || "Failed to rate course. Please try again.");
     }
   };
 
   const handleIncrementViews = async (courseId) => {
     try {
-      await axios.post(`${config.API_BASE_URL}/api/courses/view`, { courseId }, { withCredentials: true });
+      await axiosInstance.post("/api/courses/view", { courseId });
     } catch (error) {
       console.error("Error incrementing views:", error);
     }
@@ -103,10 +103,10 @@ const Publish = () => {
   const handlePublishCourse = async (course) => {
     if (!course) return;
 
-    // Check if all chapters have detailed content
+
     const allGenerated = course.chapters.every(ch => ch.detailedContent && ch.detailedContent.length > 0);
     if (!allGenerated) {
-      alert("⚠️ You must generate detailed content for ALL chapters before publishing. Go to your courses and complete the learning path first!");
+      alert("You must generate detailed content for ALL chapters before publishing. Go to your courses and complete the learning path first!");
       return;
     }
 
@@ -123,38 +123,37 @@ const Publish = () => {
         chapters: course.chapters,
       };
 
-      const response = await axios.post(`${config.API_BASE_URL}/api/courses/add`, requestData, {
+      const response = await axiosInstance.post("/api/courses/add", requestData, {
         headers: { "Content-Type": "application/json" },
-        withCredentials: true,
       });
 
       if (response.status === 201) {
         setShowPublishModal(false);
-        alert("🎉 Course published to the community gallery!");
+        alert("Course published to the community gallery!");
         setPublishedCourses(prev => [...prev, response.data.course]);
         setUnpublishedCourses(prev => prev.filter(c => c._id !== course._id));
       }
     } catch (error) {
       console.error("Error publishing course:", error);
-      alert(error.response?.data?.message || "Error publishing course");
+      alert(error.response?.data?.message || error.response?.data?.error || "Failed to publish course. Please try again.");
     }
   };
 
   const handleDeleteCourse = async (courseId) => {
     if (!window.confirm("Are you sure you want to delete this course from the community gallery?")) return;
     try {
-      await axios.delete(`${config.API_BASE_URL}/api/courses/delete/${courseId}`, { withCredentials: true });
+      await axiosInstance.delete(`/api/courses/delete/${courseId}`);
       setPublishedCourses(prev => prev.filter(c => c._id !== courseId));
     } catch (error) {
-       console.error(error);
+      console.error(error);
     }
   };
 
-  const filteredOtherCourses = otherCourses.filter(course => 
+  const filteredOtherCourses = otherCourses.filter(course =>
     course.category?.toLowerCase().includes(filterCategory.toLowerCase())
   );
 
-  const filteredPublishedCourses = publishedCourses.filter(course => 
+  const filteredPublishedCourses = publishedCourses.filter(course =>
     course.category?.toLowerCase().includes(filterCategory.toLowerCase())
   );
 
@@ -173,9 +172,9 @@ const Publish = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-right duration-700">
-            {/* Search Input */}
+
             <div className="relative group">
-              <input 
+              <input
                 type="text"
                 placeholder="Search Category..."
                 value={filterCategory}
@@ -188,20 +187,20 @@ const Publish = () => {
             </div>
 
             <div className="tabs tabs-boxed bg-slate-200/50 p-1.5 rounded-[1.5rem] gap-1 self-start">
-              <button 
+              <button
                 className={`tab tab-lg font-black transition-all rounded-2xl ${activeTab === "gallery" ? "tab-active bg-white text-primary shadow-sm" : "text-slate-500"}`}
                 onClick={() => setActiveTab("gallery")}
               >
                 Gallery
               </button>
-              <button 
+              <button
                 className={`tab tab-lg font-black transition-all rounded-2xl ${activeTab === "dashboard" ? "tab-active bg-white text-primary shadow-sm" : "text-slate-500"}`}
                 onClick={() => setActiveTab("dashboard")}
               >
                 My Dashboard
               </button>
             </div>
-            
+
             <button
               onClick={() => setShowPublishModal(true)}
               className="btn btn-primary btn-lg rounded-[1.5rem] shadow-2xl shadow-primary/30 h-16 px-10 border-none hover:scale-105 active:scale-95 transition-all font-black uppercase tracking-widest text-xs"
@@ -247,7 +246,7 @@ const Publish = () => {
                 <div className="text-slate-100 text-8xl mb-6">🏜️</div>
                 <h3 className="text-xl font-black text-slate-800 mb-2">Workspace Empty</h3>
                 <p className="text-slate-400 mb-10 text-sm leading-relaxed">You haven't generated any private courses yet. Create one building your first path.</p>
-                <button 
+                <button
                   className="btn btn-primary btn-block h-16 rounded-3xl font-black"
                   onClick={() => navigate("/generatepage")}
                 >
@@ -260,8 +259,8 @@ const Publish = () => {
                 {unpublishedCourses.map((course) => (
                   <div key={course._id} className="p-6 border border-slate-100 rounded-[2rem] bg-slate-50/50 hover:bg-white hover:shadow-2xl hover:shadow-primary/5 transition-all group">
                     <div className="flex justify-between items-start mb-2">
-                       <h4 className="font-black text-slate-800 text-lg group-hover:text-primary transition-colors">{course.courseName}</h4>
-                       <span className="text-[10px] bg-primary/10 text-primary font-black px-3 py-1 rounded-full uppercase">{course.category}</span>
+                      <h4 className="font-black text-slate-800 text-lg group-hover:text-primary transition-colors">{course.courseName}</h4>
+                      <span className="text-[10px] bg-primary/10 text-primary font-black px-3 py-1 rounded-full uppercase">{course.category}</span>
                     </div>
                     <p className="text-xs text-slate-400 mb-6 italic leading-relaxed">"{course.description}"</p>
                     <button
@@ -352,8 +351,8 @@ const CourseCard = ({
         <h4 className="text-3xl font-black text-slate-900 mb-4 group-hover:text-primary transition-colors leading-none tracking-tighter italic">
           {course.courseName}
         </h4>
-        
-        {/* Creator Info */}
+
+
         <div className="flex items-center gap-3 mb-6 p-4 bg-slate-50 rounded-2xl border border-slate-100/50">
           <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-black text-primary">
             {course.userId?.name?.[0] || "?"}
@@ -372,7 +371,7 @@ const CourseCard = ({
       </div>
 
       <div className="flex flex-col gap-4">
-        {/* Rating Stars UI */}
+
         <div className="flex items-center justify-between px-4 py-2 border border-slate-100 rounded-2xl mb-2">
           <div className="flex gap-1">
             {[1, 2, 3, 4, 5].map((s) => (
@@ -387,7 +386,7 @@ const CourseCard = ({
             ))}
           </div>
           <span className="text-[10px] font-black text-slate-300 uppercase">
-             {course.averageRating?.toFixed(1) || "0.0"} / 5.0
+            {course.averageRating?.toFixed(1) || "0.0"} / 5.0
           </span>
         </div>
 
@@ -431,7 +430,7 @@ const CourseCard = ({
               <span className="text-slate-800">{course.duration}H</span>
             </div>
           </div>
-          
+
           <h5 className="font-black text-slate-900 text-[10px] uppercase tracking-widest mb-4 px-2">Knowledge Graph</h5>
           <div className="space-y-3 px-2">
             {course.chapters.slice(0, 5).map((chapter, idx) => (
@@ -452,7 +451,7 @@ const Modal = ({ title, children, onClose }) => (
     <div className="bg-white p-12 rounded-[3.5rem] shadow-2xl w-full max-w-xl animate-in zoom-in-95 duration-500 border border-white/20">
       <div className="flex justify-between items-center mb-10">
         <h3 className="text-3xl font-[1000] text-slate-900 tracking-tighter italic">{title}</h3>
-        <button 
+        <button
           onClick={onClose}
           className="btn btn-ghost btn-circle text-slate-300 hover:text-error hover:bg-error/10"
         >

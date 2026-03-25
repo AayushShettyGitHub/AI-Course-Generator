@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import config from "../../config";
+import axiosInstance from "../../utils/axiosInstance";
 
 const Layout = () => {
   const [courseData, setCourseData] = useState(null);
@@ -16,12 +15,7 @@ const Layout = () => {
 
   const saveCourse = async () => {
     try {
-      await axios.post(`${config.API_BASE_URL}/api/saveCourse`, courseData, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        withCredentials: true,
-      });
+      await axiosInstance.post("/api/saveCourse", courseData);
 
 
       localStorage.removeItem("courseData");
@@ -36,7 +30,7 @@ const Layout = () => {
   const handleDiscard = () => {
     localStorage.removeItem("courseData");
     localStorage.setItem("showLayout", "false");
-    window.location.reload(); // Simplest way to reset the page state in this structure
+    window.location.reload();
   };
 
   if (!courseData) {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { Link, useNavigate } from 'react-router-dom';
-import config from '../../config';
+import axiosInstance from '../../utils/axiosInstance';
 
 function NavBar() {
   const navigate = useNavigate();
@@ -28,17 +28,10 @@ function NavBar() {
         const userId = decodedToken?.userId;
 
         if (userId) {
-          fetch(`${config.API_BASE_URL}/api/getUser?id=${userId}`, {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data) {
-                setUpdatedUser(data);
+          axiosInstance.get(`/api/getUser?id=${userId}`)
+            .then((res) => {
+              if (res.data) {
+                setUpdatedUser(res.data);
               }
             })
             .catch((error) => {
@@ -53,11 +46,9 @@ function NavBar() {
 
   return (
     <div className="navbar bg-base-100 z-[50] w-full fixed top-0 shadow-md">
-
       <div className="drawer drawer-end">
         <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
         <div className="drawer-content flex items-center">
-
           <label
             htmlFor="my-drawer-4"
             className="drawer-button btn btn-ghost lg:hidden mr-2"
@@ -82,7 +73,6 @@ function NavBar() {
             <span className="text-primary">Coursi</span>FY
           </a>
 
-
           <div className="navbar-center hidden lg:flex flex-1 justify-center">
             <ul className="menu menu-horizontal px-1">
               <li><button onClick={() => navigate("/homepage")}>Home</button></li>
@@ -94,11 +84,9 @@ function NavBar() {
           </div>
         </div>
 
-
         <div className="drawer-side z-[50]">
           <label htmlFor="my-drawer-4" className="drawer-overlay"></label>
           <ul className="menu bg-base-200 text-base-content w-80 p-4">
-
             <li><button onClick={() => navigate("/homepage")}>Home</button></li>
             <li><button onClick={() => navigate("/publish")}>Publish</button></li>
             <li><button onClick={() => navigate("/generatepage")}>Generate</button></li>
@@ -115,9 +103,8 @@ function NavBar() {
           >
             <div className="w-10 rounded-full">
               <img
-                alt="Tailwind CSS Navbar component"
+                alt="Profile"
                 src={updatedUser?.profileImage || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"}
-
               />
             </div>
           </div>

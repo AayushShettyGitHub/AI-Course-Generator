@@ -80,7 +80,8 @@ exports.resetPassword = async (req, res) => {
       return res.status(400).json({ message: 'Invalid or expired reset token' });
     }
 
-    user.password = newPassword;
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
     user.resetToken = undefined;
     user.resetTokenExpiry = undefined;
     user.resetOTP = undefined;
@@ -112,7 +113,9 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    const user = new Schema({ name, email, password });
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const user = new Schema({ name, email, password: hashedPassword });
     await user.save();
 
     const token = generateToken(user._id, res);
@@ -146,7 +149,6 @@ exports.updateUser = async (req, res) => {
   } = req.body;
 
   try {
-    // Priority: use req.userId from auth middleware, fallback to email
     const query = req.userId ? { _id: req.userId } : { email };
 
     if (!query._id && !query.email) {
@@ -167,7 +169,6 @@ exports.updateUser = async (req, res) => {
     if (interest) user.interest = interest;
     if (profession) user.profession = profession;
 
-    // Only upload to Cloudinary if it's a new image (base64 data URL)
     if (profileImage && profileImage.startsWith('data:image')) {
       try {
         const uploadedImageUrl = await uploadImageToCloudinary(profileImage);
@@ -177,7 +178,7 @@ exports.updateUser = async (req, res) => {
         return res.status(500).json({ message: 'Image upload failed', error: error.message });
       }
     } else if (profileImage === "") {
-      user.profileImage = ""; // Allow clearing the profile image
+      user.profileImage = ""; 
     }
 
     await user.save();
@@ -259,11 +260,16 @@ exports.googleSignIn = async (req, res) => {
     let user = await Schema.findOne({ email });
 
     if (!user) {
+      const randomPassword = crypto.randomBytes(16).toString('hex');
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(randomPassword, salt);
+      
       user = new Schema({
         googleId,
         email,
         name,
         profileImage: picture,
+        password: hashedPassword,
       });
       await user.save();
     } else if (!user.googleId) {

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import NavBar from "../MainComponents/NavBar";
 import Footer from "../MainComponents/Footer";
 import Cookies from "js-cookie";
-import config from "../../config";
+import axiosInstance from "../../utils/axiosInstance";
 
 const CourseView = () => {
   const [user, setUser] = useState(null);
@@ -26,19 +26,9 @@ const CourseView = () => {
         const userId = decodedToken?.userId;
 
         if (userId) {
-
-          fetch(`${config.API_BASE_URL}/api/getUser?id=${userId}`, {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data) {
-                setUser(data);
-              }
+          axiosInstance.get(`/api/getUser?id=${userId}`)
+            .then((res) => {
+              setUser(res.data);
               setIsLoading(false);
             })
             .catch((error) => {
@@ -46,19 +36,10 @@ const CourseView = () => {
               setIsLoading(false);
             });
 
-
-          fetch(`${config.API_BASE_URL}/api/getCourse/${userId}`, {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data && data.length > 0) {
-                console.log("Fetched courses:", data);
-                setCourses(data);
+          axiosInstance.get(`/api/getCourse/${userId}`)
+            .then((res) => {
+              if (res.data && res.data.length > 0) {
+                setCourses(res.data);
               }
             })
             .catch((error) => {
@@ -73,33 +54,17 @@ const CourseView = () => {
   }, []);
 
   const handleGenerateCourse = (course) => {
-
     navigate("/viewlayout", { state: { course } });
   };
 
   const handleDeleteCourse = async (courseId) => {
     try {
-      const response = await fetch(`${config.API_BASE_URL}/api/deleteCourse/${courseId}`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await axiosInstance.delete(`/api/deleteCourse/${courseId}`);
 
-      if (response.ok) {
+      if (response.status === 200) {
         alert("Course Deleted");
-
-
-        const updatedCourses = await fetch(`${config.API_BASE_URL}/api/getCourse/${user?._id}`, {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }).then((res) => res.json());
-
-        setCourses(updatedCourses);
+        const res = await axiosInstance.get(`/api/getCourse/${user?._id}`);
+        setCourses(res.data);
       } else {
         console.error("Failed to delete course");
       }
@@ -107,7 +72,6 @@ const CourseView = () => {
       console.error("Error deleting course:", error);
     }
   };
-
 
   if (isLoading) return <p className="text-center text-xl font-semibold">Loading...</p>;
 

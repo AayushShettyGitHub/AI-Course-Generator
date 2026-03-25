@@ -1,27 +1,28 @@
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 exports.sendResetEmail = async (email, otp) => {
- 
-  let testAccount = await nodemailer.createTestAccount();
+  try {
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.resend.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'resend',
+        pass: process.env.RESEND_API_KEY,
+      },
+    });
 
+    const info = await transporter.sendMail({
+      from: '"CoursiFY" <onboarding@resend.dev>',
+      to: email,
+      subject: "Password Reset OTP",
+      text: `Your OTP for password reset is ${otp}. It expires in 10 minutes.`,
+      html: `<b>Your OTP for password reset is ${otp}</b><p>It expires in 10 minutes.</p>`,
+    });
 
-  let transporter = nodemailer.createTransport({
-    host: testAccount.smtp.host,
-    port: testAccount.smtp.port,
-    secure: testAccount.smtp.secure,
-    auth: {
-      user: testAccount.user,
-      pass: testAccount.pass,
-    },
-  });
-
-  let info = await transporter.sendMail({
-    from: '"YourApp" <no-reply@yourapp.com>',
-    to: email,
-    subject: "Password Reset OTP",
-    text: `Your OTP for password reset is ${otp}. It expires in 10 minutes.`,
-  });
-
-  console.log("Message sent: %s", info.messageId);
-  console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    console.log("Email Sent:", info.messageId);
+  } catch (error) {
+    console.error("Mail Error:", error.message);
+  }
 };

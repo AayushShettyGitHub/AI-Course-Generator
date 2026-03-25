@@ -1,12 +1,11 @@
 import { useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import config from "../../config";
 
 function ForgotPass() {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
-  const [step, setStep] = useState("email"); 
+  const [step, setStep] = useState("email");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -14,33 +13,34 @@ function ForgotPass() {
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${config.API_BASE_URL}/auth/forgot-password`, { email });
+      const res = await axiosInstance.post("/auth/forgot-password", { email });
       setMessage(res.data.message);
       setStep("otp");
       setError("");
     } catch (err) {
-      setError(err.response?.data?.error || "Something went wrong");
+      const data = err.response?.data;
+      setError(data?.message || data?.error || "Error sending OTP. Please try again.");
     }
   };
 
   const handleOtpVerify = async (e) => {
-  e.preventDefault();
-  try {
-    const res = await axios.post(
-      `${config.API_BASE_URL}/auth/verify-otp`,
-      { email, otp },
-      { withCredentials: true } // send cookie
-    );
+    e.preventDefault();
+    try {
+      const res = await axiosInstance.post(
+        "/auth/verify-otp",
+        { email, otp }
+      );
 
-    setMessage(res.data.message);
-    setError("");
+      setMessage(res.data.message);
+      setError("");
 
-    // Navigate to reset password page, no need to pass email/token
-    navigate("/reset-password");
-  } catch (err) {
-    setError(err.response?.data?.message || "Invalid OTP");
-  }
-};
+
+      navigate("/reset-password");
+    } catch (err) {
+      const data = err.response?.data;
+      setError(data?.message || data?.error || "Invalid OTP. Please try again.");
+    }
+  };
 
 
   return (

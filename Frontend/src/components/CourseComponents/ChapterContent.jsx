@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import NavBar from "../MainComponents/NavBar";
 import Footer from "../MainComponents/Footer";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import config from "../../config";
 
 const ChapterContent = () => {
   const location = useLocation();
@@ -19,7 +18,7 @@ const ChapterContent = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [openSections, setOpenSections] = useState({});
-  const [activeTab, setActiveTab] = useState("content"); // "content", "videos", "quiz"
+  const [activeTab, setActiveTab] = useState("content");
 
   useEffect(() => {
     if (chapter?.detailedContent?.length > 0) {
@@ -35,7 +34,6 @@ const ChapterContent = () => {
   };
 
   const generateContent = async () => {
-    // If already generated, don't call API again (except for Quiz as per user request)
     if (generatedContent.length > 0) {
       setActiveTab("content");
       return;
@@ -44,10 +42,9 @@ const ChapterContent = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(
-        `${config.API_BASE_URL}/api/geminiContent`,
-        { chapter },
-        { headers: { "Content-Type": "application/json" }, withCredentials: true }
+      const response = await axiosInstance.post(
+        "/api/geminiContent",
+        { chapter }
       );
       
       const newContent = Array.isArray(response.data.content) ? response.data.content : [];
@@ -57,18 +54,17 @@ const ChapterContent = () => {
       setGeneratedVideos(newVideos);
       setActiveTab("content");
 
-      // SAVE to Database
       if (courseId && chapter?._id) {
         const updateEndpoint = isPublished 
-          ? `${config.API_BASE_URL}/api/courses/updateChapter` 
-          : `${config.API_BASE_URL}/api/updateChapter`;
+          ? "/api/courses/updateChapter" 
+          : "/api/updateChapter";
         
-        await axios.post(updateEndpoint, {
+        await axiosInstance.post(updateEndpoint, {
           courseId,
           chapterId: chapter._id,
           detailedContent: newContent,
           videos: newVideos
-        }, { withCredentials: true });
+        });
       }
 
     } catch (err) {
@@ -83,10 +79,9 @@ const ChapterContent = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(
-        `${config.API_BASE_URL}/api/quiz`,
-        { topic: chapter.chapterName, difficulty: "medium", noOfQuestions: 5 },
-        { headers: { "Content-Type": "application/json" }, withCredentials: true }
+      const response = await axiosInstance.post(
+        "/api/quiz",
+        { topic: chapter.chapterName, difficulty: "medium", noOfQuestions: 5 }
       );
       setQuizQuestions(Array.isArray(response.data.quiz) ? response.data.quiz : []);
       setSelectedOptions({});
@@ -102,7 +97,6 @@ const ChapterContent = () => {
 
   const handleOptionSelect = (qIndex, option) => {
     setSelectedOptions((prev) => ({ ...prev, [qIndex]: option }));
-    // Check if all questions are answered
     if (Object.keys(selectedOptions).length + 1 === quizQuestions.length) {
       setQuizCompleted(true);
     }
@@ -120,7 +114,6 @@ const ChapterContent = () => {
   };
 
 
-  // Format chapter content dynamically: paragraphs, bullets, bold (**text**)
   const renderChapterContent = () => {
     if (!chapter || !chapter.content) return <p className="text-slate-400 italic">No summary available.</p>;
     return chapter.content
@@ -149,7 +142,6 @@ const ChapterContent = () => {
       });
   };
 
-  // Compute quiz score
   const computeScore = () => {
     let score = 0;
     quizQuestions.forEach((q, i) => {
@@ -196,13 +188,11 @@ const ChapterContent = () => {
         
         <h1 className="text-4xl text-center font-extrabold text-slate-900 mb-8 tracking-tight">{chapter.chapterName}</h1>
 
-        {/* Chapter content */}
         <div className="prose prose-slate max-w-none mb-10 text-slate-700 leading-relaxed">
           {renderChapterContent()}
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-6 border-t border-slate-100 pt-8 mt-10">
-          {/* Tabs */}
           <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-1">
             <button
               className={`px-6 py-2.5 rounded-xl font-bold transition-all text-sm ${activeTab === "content" ? "bg-white text-primary shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
@@ -242,7 +232,6 @@ const ChapterContent = () => {
           </div>
         )}
 
-        {/* Content Tab */}
         {activeTab === "content" && generatedContent.length > 0 && (
           <div className="mt-6">
             <h2 className="text-2xl font-semibold mb-3">Generated Content</h2>
@@ -303,7 +292,6 @@ const ChapterContent = () => {
           </div>
         )}
 
-        {/* Videos Tab */}
         {activeTab === "videos" && generatedVideos.length > 0 && (
           <div className="mt-6">
             {generatedVideos.map((video, index) => (
@@ -320,7 +308,6 @@ const ChapterContent = () => {
           </div>
         )}
 
-        {/* Quiz Tab */}
         {activeTab === "quiz" && quizQuestions.length > 0 && (
           <div className="mt-6">
             <h2 className="text-2xl font-semibold mb-3">Quiz</h2>
@@ -358,7 +345,6 @@ const ChapterContent = () => {
               );
             })}
 
-            {/* Score and Retry */}
             {quizCompleted && (
               <div className="mt-10 p-8 rounded-3xl bg-primary/5 border border-primary/10 text-center animate-in zoom-in duration-500">
                 <div className="text-sm font-bold text-primary uppercase tracking-widest mb-2">Quiz Completed</div>

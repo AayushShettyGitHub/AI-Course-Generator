@@ -51,7 +51,7 @@ exports.generateLayout = async (req, res) => {
 
     const result = await model.generateContent(prompt);
     let responseText = await result.response.text();
-    // Fallback for cases where markdown might still be present
+
     const responseText2 = responseText.replace(/```json|```/g, "").trim();
 
     try {

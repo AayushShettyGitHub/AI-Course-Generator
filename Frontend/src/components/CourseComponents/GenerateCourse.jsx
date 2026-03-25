@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import Cookies from "js-cookie";
-import config from "../../config";
 
 const decodeJWT = (token) => {
   const payload = token.split('.')[1];
@@ -24,7 +23,6 @@ function GenerateCourse({ onGenerate }) {
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState(null);
 
- 
   useEffect(() => {
     const token = Cookies.get("jwt");
 
@@ -61,28 +59,22 @@ function GenerateCourse({ onGenerate }) {
 
   const generate = async () => {
     try {
-
       const finalFormData = { ...formData, userId };
   
       console.log("Request Data:", finalFormData);
   
-      const response = await axios.post(`${config.API_BASE_URL}/api/geminiLayout`, finalFormData,{
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        withCredentials: true,
-      });
-      
+      const response = await axiosInstance.post("/api/geminiLayout", finalFormData);
       
       const courseDataWithUserId = { ...response.data, userId };
   
-   
       localStorage.setItem("courseData", JSON.stringify(courseDataWithUserId));
       console.log("Response:", response.data);
   
       onGenerate();
     } catch (error) {
       console.error("Error generating course:", error);
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || "Failed to generate course. Please try again.";
+      alert(errorMessage);
     }
   };
   

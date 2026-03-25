@@ -1,6 +1,5 @@
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import { useState } from "react";
-import config from "../../config";
 
 function SignUp({ toggleAuthMode }) {
   const [formData, setFormData] = useState({
@@ -18,14 +17,23 @@ function SignUp({ toggleAuthMode }) {
   const handleSignUp = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${config.API_BASE_URL}/auth/register`, formData);
-      console.log("User signed up successfully!", response.data);
+      const response = await axiosInstance.post("/auth/register", formData);
 
-     
+
+
       toggleAuthMode();
     } catch (err) {
-      console.error("Sign-up failed:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "Something went wrong!");
+      const data = err.response?.data;
+      let errorMessage = "Registration failed. Please try again.";
+
+      if (data) {
+        errorMessage = data.message || data.error || errorMessage;
+      } else if (err.request) {
+        errorMessage = "Network error. Please try again later.";
+      }
+
+      console.error("Sign-up Error:", errorMessage);
+      setError(errorMessage);
     }
   };
 

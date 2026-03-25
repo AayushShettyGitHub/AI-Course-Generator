@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import Cookies from "js-cookie";
-import config from "../../config";
 
 function SignIn({ toggleAuthMode }) {
   const [email, setEmail] = useState("");
@@ -15,22 +14,28 @@ function SignIn({ toggleAuthMode }) {
     setError("");
 
     try {
-      console.log(email, password)
-      const response = await axios.post(
-        `${config.API_BASE_URL}/auth/login`,
-        { email, password },
-        { withCredentials: true }
+
+      const response = await axiosInstance.post(
+        "/auth/login",
+        { email, password }
       );
 
-      console.log("Login successful:", response.data);
+
       Cookies.set("jwt", response.data.token, { expires: 7 });
 
-      console.log("JWT Cookie after setting:", Cookies.get("jwt"));
+
       navigate("/homepage");
     } catch (error) {
+      const data = error.response?.data;
+      let errorMessage = "Something went wrong. Please try again.";
 
-      const errorMessage = error.response?.data?.message || error.message || "An error occurred. Please try again.";
-      console.error("Error during login:", errorMessage);
+      if (data) {
+        errorMessage = data.message || data.error || errorMessage;
+      } else if (error.request) {
+        errorMessage = "Network error. Please check your connection.";
+      }
+
+      console.error("Login Error:", errorMessage);
       setError(errorMessage);
     }
   };
