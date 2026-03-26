@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
 import Cookies from "js-cookie";
+import { toast } from "react-hot-toast";
 
 function SignIn({ toggleAuthMode }) {
   const [email, setEmail] = useState("");
@@ -14,16 +15,13 @@ function SignIn({ toggleAuthMode }) {
     setError("");
 
     try {
-
       const response = await axiosInstance.post(
         "/auth/login",
         { email, password }
       );
 
-
       Cookies.set("jwt", response.data.token, { expires: 7 });
-
-
+      toast.success("Welcome back!");
       navigate("/homepage");
     } catch (error) {
       const data = error.response?.data;
@@ -37,6 +35,7 @@ function SignIn({ toggleAuthMode }) {
 
       console.error("Login Error:", errorMessage);
       setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 

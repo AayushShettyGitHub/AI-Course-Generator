@@ -6,6 +6,7 @@ const { generateLayout, generateContent } = require("../services/AiModel");
 const { generateQuiz } = require("../services/Quiz");
 const { saveCourse, getCourse, deleteCourse, updateChapter } = require("../Controller/courseStore");
 const { getVideo } = require("../Controller/getVideo");
+const { aiLimiter } = require("../middleware/rateLimit");
 
 const router = express.Router();
 
@@ -18,9 +19,9 @@ router.use(authenticate);
 router.get("/getUser", getData);
 router.get("/getCourse/:userId", getCourse);
 router.post("/update", updateUser);
-router.post("/geminiLayout", generateLayout);
-router.post("/geminiContent", generateContent);
-router.post("/quiz", generateQuiz);
+router.post("/geminiLayout", aiLimiter, generateLayout);
+router.post("/geminiContent", aiLimiter, generateContent);
+router.post("/quiz", aiLimiter, generateQuiz);
 router.post("/saveCourse", saveCourse);
 router.post("/updateChapter", updateChapter);
 router.post("/getVideo", getVideo);

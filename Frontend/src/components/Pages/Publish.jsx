@@ -1,52 +1,40 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../../utils/axiosInstance";
-import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import NavBar from "../MainComponents/NavBar";
 import Footer from "../MainComponents/Footer";
 import config from "../../config";
+import { useUser } from "../../context/UserContext";
+import { toast } from "react-hot-toast";
 
 const Publish = () => {
-  const [user, setUser] = useState(null);
+  const { user, isLoading: isUserLoading } = useUser();
   const [publishedCourses, setPublishedCourses] = useState([]);
   const [unpublishedCourses, setUnpublishedCourses] = useState([]);
   const [otherCourses, setOtherCourses] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isDataLoading, setIsDataLoading] = useState(true);
   const [showPublishModal, setShowPublishModal] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState(null);
   const [expandedCourse, setExpandedCourse] = useState(null);
-  const [activeTab, setActiveTab] = useState("gallery");
+  const [activeTab, setActiveTab ] = useState("gallery");
   const [filterCategory, setFilterCategory] = useState("");
 
   const navigate = useNavigate();
 
-  const decodeJWT = (token) => {
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      return payload || null;
-    } catch (error) {
-      console.error("Invalid token:", error);
-      return null;
-    }
-  };
-
   useEffect(() => {
-    const socket = io(config.API_BASE_URL);
-    const token = Cookies.get("jwt");
-    if (!token) return setIsLoading(false);
-
-    const decodedToken = decodeJWT(token);
-    const userId = decodedToken?.userId;
-    if (!userId) {
-      setIsLoading(false);
+    if (isUserLoading || !user?._id) {
+      if (!isUserLoading && !user?._id) {
+        setIsDataLoading(false);
+      }
       return;
     }
 
-    const fetchUserData = async () => {
-      try {
-        const userRes = await axiosInstance.get(`/api/getUser?id=${userId}`);
-        setUser(userRes.data);
+    const socket = io(config.API_BASE_URL);
+    const userId = user._id;
 
+    const fetchDashboardData = async () => {
+      try {
         const publishedRes = await axiosInstance.get(`/api/courses/mine?userId=${userId}`);
         setPublishedCourses(publishedRes.data || []);
 
@@ -58,11 +46,11 @@ const Publish = () => {
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
-        setIsLoading(false);
+        setIsDataLoading(false);
       }
     };
 
-    fetchUserData();
+    fetchDashboardData();
 
     socket.on("coursePublished", (newCourse) => {
       if (newCourse.userId === userId) {
@@ -73,8 +61,11 @@ const Publish = () => {
       }
     });
 
-    return () => socket.off("coursePublished");
-  }, []);
+    return () => {
+      socket.off("coursePublished");
+      socket.disconnect();
+    };
+  }, [user, isUserLoading]);
 
   const handleRateCourse = async (courseId, rating) => {
     try {
@@ -86,9 +77,9 @@ const Publish = () => {
 
       const { averageRating } = response.data;
       setOtherCourses(prev => prev.map(c => c._id === courseId ? { ...c, averageRating } : c));
-      alert("Thanks for rating!");
+      toast.success("Thanks for rating!");
     } catch (error) {
-      alert(error.response?.data?.message || error.response?.data?.error || "Failed to rate course. Please try again.");
+      toast.error(error.response?.data?.message || error.response?.data?.error || "Failed to rate course.");
     }
   };
 
@@ -103,10 +94,9 @@ const Publish = () => {
   const handlePublishCourse = async (course) => {
     if (!course) return;
 
-
     const allGenerated = course.chapters.every(ch => ch.detailedContent && ch.detailedContent.length > 0);
     if (!allGenerated) {
-      alert("You must generate detailed content for ALL chapters before publishing. Go to your courses and complete the learning path first!");
+      toast.error("Generate detailed content for ALL chapters before publishing!");
       return;
     }
 
@@ -129,23 +119,26 @@ const Publish = () => {
 
       if (response.status === 201) {
         setShowPublishModal(false);
-        alert("Course published to the community gallery!");
+        toast.success("Course published to the community gallery!");
         setPublishedCourses(prev => [...prev, response.data.course]);
         setUnpublishedCourses(prev => prev.filter(c => c._id !== course._id));
       }
     } catch (error) {
       console.error("Error publishing course:", error);
-      alert(error.response?.data?.message || error.response?.data?.error || "Failed to publish course. Please try again.");
+      toast.error(error.response?.data?.message || error.response?.data?.error || "Failed to publish course.");
     }
   };
 
-  const handleDeleteCourse = async (courseId) => {
-    if (!window.confirm("Are you sure you want to delete this course from the community gallery?")) return;
+  const confirmDeleteCourse = async () => {
+    if (!courseToDelete) return;
     try {
-      await axiosInstance.delete(`/api/courses/delete/${courseId}`);
-      setPublishedCourses(prev => prev.filter(c => c._id !== courseId));
+      await axiosInstance.delete(`/api/courses/delete/${courseToDelete}`);
+      setPublishedCourses(prev => prev.filter(c => c._id !== courseToDelete));
+      toast.success("Course removed from gallery");
+      setCourseToDelete(null);
     } catch (error) {
       console.error(error);
+      toast.error("Failed to delete course");
     }
   };
 
@@ -172,7 +165,6 @@ const Publish = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-right duration-700">
-
             <div className="relative group">
               <input
                 type="text"
@@ -211,7 +203,7 @@ const Publish = () => {
           </div>
         </div>
 
-        {isLoading ? (
+        {isDataLoading ? (
           <div className="flex flex-col items-center justify-center py-32 opacity-50">
             <span className="loading loading-spinner loading-lg text-primary mb-4"></span>
             <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Curating Hub...</p>
@@ -233,7 +225,7 @@ const Publish = () => {
             courses={filteredPublishedCourses}
             expandedCourse={expandedCourse}
             setExpandedCourse={setExpandedCourse}
-            handleDeleteCourse={handleDeleteCourse}
+            handleDeleteInitiate={setCourseToDelete}
             currentUser={user}
             isMine={true}
           />
@@ -275,6 +267,30 @@ const Publish = () => {
             )}
           </Modal>
         )}
+
+        {courseToDelete && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex justify-center items-center z-[110] p-6 animate-in fade-in duration-300">
+            <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-sm text-center animate-in zoom-in-95 duration-300 border border-slate-100">
+              <div className="w-20 h-20 bg-error/10 text-error rounded-3xl flex items-center justify-center text-4xl mb-6 mx-auto">🗑️</div>
+              <h3 className="text-2xl font-black text-slate-900 mb-2">Delete Course?</h3>
+              <p className="text-slate-500 mb-8 text-sm">This will permanently remove the course from the community gallery. Your private copy will remain safe.</p>
+              <div className="flex gap-3">
+                <button 
+                  className="btn btn-ghost flex-1 rounded-2xl font-bold"
+                  onClick={() => setCourseToDelete(null)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="btn btn-error flex-1 rounded-2xl font-bold text-white shadow-lg shadow-error/20"
+                  onClick={confirmDeleteCourse}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       <Footer />
     </div>
@@ -286,7 +302,7 @@ const CourseSection = ({
   courses,
   expandedCourse,
   setExpandedCourse,
-  handleDeleteCourse,
+  handleDeleteInitiate,
   handleRate,
   handleView,
   currentUser,
@@ -306,7 +322,7 @@ const CourseSection = ({
             course={course}
             expandedCourse={expandedCourse}
             setExpandedCourse={setExpandedCourse}
-            handleDeleteCourse={handleDeleteCourse}
+            handleDeleteInitiate={handleDeleteInitiate}
             handleRate={handleRate}
             handleView={handleView}
             currentUser={currentUser}
@@ -322,7 +338,7 @@ const CourseCard = ({
   course,
   expandedCourse,
   setExpandedCourse,
-  handleDeleteCourse,
+  handleDeleteInitiate,
   handleRate,
   handleView,
   currentUser,
@@ -340,8 +356,8 @@ const CourseCard = ({
   return (
     <div className="group bg-white p-10 rounded-[3rem] shadow-sm hover:shadow-2xl border border-slate-100 transition-all duration-500 flex flex-col relative overflow-hidden">
       <div className="absolute top-0 right-0 p-8 flex flex-col items-end pointer-events-none">
-        <div className="text-[10px] font-black text-slate-200 leading-none mb-1">VIEWS</div>
-        <div className="text-xl font-black text-slate-100 leading-none">{course.views || 0}</div>
+        <div className="text-[10px] font-black text-slate-400 leading-none mb-1">VIEWS</div>
+        <div className="text-xl font-black text-slate-600 leading-none">{course.views || 0}</div>
       </div>
 
       <div className="mb-8">
@@ -351,7 +367,6 @@ const CourseCard = ({
         <h4 className="text-3xl font-black text-slate-900 mb-4 group-hover:text-primary transition-colors leading-none tracking-tighter italic">
           {course.courseName}
         </h4>
-
 
         <div className="flex items-center gap-3 mb-6 p-4 bg-slate-50 rounded-2xl border border-slate-100/50">
           <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-black text-primary">
@@ -371,7 +386,6 @@ const CourseCard = ({
       </div>
 
       <div className="flex flex-col gap-4">
-
         <div className="flex items-center justify-between px-4 py-2 border border-slate-100 rounded-2xl mb-2">
           <div className="flex gap-1">
             {[1, 2, 3, 4, 5].map((s) => (
@@ -407,7 +421,7 @@ const CourseCard = ({
 
           {isMine && (
             <button
-              onClick={() => handleDeleteCourse(course._id)}
+              onClick={() => handleDeleteInitiate(course._id)}
               className="btn btn-ghost btn-sm text-error/30 hover:text-error hover:bg-error/10 transition-all rounded-xl"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

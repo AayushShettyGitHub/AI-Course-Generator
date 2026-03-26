@@ -1,7 +1,8 @@
 import { useState } from "react";
 import axiosInstance from "../../utils/axiosInstance";
+import { toast } from "react-hot-toast";
 
-const ProfileEdit = ({ user, onCancel }) => {
+const ProfileEdit = ({ user, onCancel, onSave }) => {
   const [formData, setFormData] = useState({
     profileImage: user?.profileImage || "",
     name: user?.name || "",
@@ -49,13 +50,14 @@ const ProfileEdit = ({ user, onCancel }) => {
       });
 
       if (response.status === 200) {
-        alert("Profile updated successfully");
-        onCancel();
+        toast.success("Profile updated successfully");
+        if (onSave) onSave();
+        else onCancel();
       }
     } catch (error) {
       console.error("Error updating profile:", error);
       const errorMessage = error.response?.data?.message || "Failed to update profile. Please try again.";
-      alert(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -67,7 +69,6 @@ const ProfileEdit = ({ user, onCancel }) => {
         <div className="avatar">
           <div className="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
             <img src={formData.profileImage || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"} alt="Avatar Preview" className="object-cover" />
-
           </div>
         </div>
         <input

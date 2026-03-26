@@ -1,25 +1,23 @@
 import { useState } from "react";
 import axiosInstance from "../../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 function ForgotPass() {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState("email");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
     try {
       const res = await axiosInstance.post("/auth/forgot-password", { email });
-      setMessage(res.data.message);
+      toast.success(res.data.message);
       setStep("otp");
-      setError("");
     } catch (err) {
       const data = err.response?.data;
-      setError(data?.message || data?.error || "Error sending OTP. Please try again.");
+      toast.error(data?.message || data?.error || "Error sending OTP.");
     }
   };
 
@@ -30,23 +28,18 @@ function ForgotPass() {
         "/auth/verify-otp",
         { email, otp }
       );
-
-      setMessage(res.data.message);
-      setError("");
-
-
-      navigate("/reset-password");
+      toast.success(res.data.message);
+      navigate("/reset-password", { state: { email } });
     } catch (err) {
       const data = err.response?.data;
-      setError(data?.message || data?.error || "Invalid OTP. Please try again.");
+      toast.error(data?.message || data?.error || "Invalid OTP.");
     }
   };
-
 
   return (
     <div className="hero min-h-screen bg-base-200">
       <div className="card w-full max-w-sm bg-base-100 shadow-2xl p-5">
-        <h2 className="text-2xl font-bold text-center mb-4">Forgot Password</h2>
+        <h2 className="text-2xl font-bold text-center mb-4 text-primary">Forgot Password</h2>
 
         {step === "email" ? (
           <form onSubmit={handleEmailSubmit}>
@@ -58,7 +51,7 @@ function ForgotPass() {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-            <button className="btn btn-primary w-full" type="submit">
+            <button className="btn btn-primary w-full shadow-lg shadow-primary/20" type="submit">
               Send OTP
             </button>
           </form>
@@ -72,16 +65,13 @@ function ForgotPass() {
               onChange={(e) => setOtp(e.target.value)}
               required
             />
-            <button className="btn btn-success w-full" type="submit">
+            <button className="btn btn-success w-full text-white shadow-lg shadow-success/20" type="submit">
               Verify OTP
             </button>
           </form>
         )}
 
-        {message && <p className="text-green-500 text-sm mt-3">{message}</p>}
-        {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
-
-        <button onClick={() => navigate("/signin")} className="btn btn-link mt-4 text-sm">
+        <button onClick={() => navigate("/login")} className="btn btn-link mt-4 text-sm text-slate-400">
           Back to Login
         </button>
       </div>

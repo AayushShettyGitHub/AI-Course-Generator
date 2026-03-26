@@ -1,14 +1,10 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../../utils/axiosInstance";
-import Cookies from "js-cookie";
-
-const decodeJWT = (token) => {
-  const payload = token.split('.')[1];
-  const decodedPayload = atob(payload);
-  return JSON.parse(decodedPayload);
-};
+import { useUser } from "../../context/UserContext";
+import { toast } from "react-hot-toast";
 
 function GenerateCourse({ onGenerate }) {
+  const { user } = useUser();
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
     category: "",
@@ -19,26 +15,6 @@ function GenerateCourse({ onGenerate }) {
     videos: "", 
     description: "",
   });
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [userId, setUserId] = useState(null);
-
-  useEffect(() => {
-    const token = Cookies.get("jwt");
-
-    if (token) {
-      try {
-        const decodedToken = decodeJWT(token);
-        const userId = decodedToken?.userId;
-        setUserId(userId); 
-      } catch (error) {
-        console.error("Error decoding token:", error);
-      }
-    } else {
-      console.error("No JWT found in cookies");
-    }
-    setIsLoading(false); 
-  }, []);
 
   const handleNext = () => {
     if (step < 2) {
@@ -59,29 +35,26 @@ function GenerateCourse({ onGenerate }) {
 
   const generate = async () => {
     try {
+      const userId = user?._id;
+      if (!userId) {
+        toast.error("User not found. Please re-login.");
+        return;
+      }
       const finalFormData = { ...formData, userId };
-  
-      console.log("Request Data:", finalFormData);
   
       const response = await axiosInstance.post("/api/geminiLayout", finalFormData);
       
       const courseDataWithUserId = { ...response.data, userId };
   
       localStorage.setItem("courseData", JSON.stringify(courseDataWithUserId));
-      console.log("Response:", response.data);
-  
       onGenerate();
     } catch (error) {
       console.error("Error generating course:", error);
       const errorMessage = error.response?.data?.message || error.response?.data?.error || "Failed to generate course. Please try again.";
-      alert(errorMessage);
+      toast.error(errorMessage);
     }
   };
   
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 container mx-auto px-4 py-6 pt-28">

@@ -15,31 +15,34 @@ import ChapterContent from "./components/CourseComponents/ChapterContent.jsx";
 import Publish from "./components/Pages/Publish.jsx";
 
 
+import { UserProvider } from "./context/UserContext.jsx";
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
-  <Router>
-      <Routes>
-      <Route path="*" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<AuthSwitch />} />
-        <Route path="/forgot-password" element={<ForgotPass />} />
-        <Route path="/reset-password" element={<ResetPass />} />
-        
-        <Route element={<ProtectedRoute />}>
-          <Route path="/homepage" element={<Homepage />} />
-          <Route path="/profilepage" element={<ProfileSwitch />} />
-          <Route path="/generatepage" element={<CourseGenerator />} />
-          <Route path="/viewcourse" element={<CourseView />} />
-          <Route path="/viewlayout" element={<CourseLayout2 />} />
-          <Route path="/viewcontent" element={<ChapterContent />} />
-          <Route path="/publish" element={<Publish />} />
-          <Route path="/publishView" element={<PublishView />} />
-        </Route>
-      </Routes>
-    </Router>
+    <UserProvider>
+      <Toaster position="top-right" reverseOrder={false} />
+      <Router>
+        <Routes>
+          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<AuthSwitch />} />
+          <Route path="/forgot-password" element={<ForgotPass />} />
+          <Route path="/reset-password" element={<ResetPass />} />
+          
+          <Route element={<ProtectedRoute />}>
+            <Route path="/homepage" element={<Homepage />} />
+            <Route path="/profilepage" element={<ProfileSwitch />} />
+            <Route path="/generatepage" element={<CourseGenerator />} />
+            <Route path="/viewcourse" element={<CourseView />} />
+            <Route path="/viewlayout" element={<CourseLayout2 />} />
+            <Route path="/viewcontent" element={<ChapterContent />} />
+            <Route path="/publish" element={<Publish />} />
+            <Route path="/publishView" element={<PublishView />} />
+          </Route>
+        </Routes>
+      </Router>
+    </UserProvider>
   );
- 
- 
 }
 
 export default App;

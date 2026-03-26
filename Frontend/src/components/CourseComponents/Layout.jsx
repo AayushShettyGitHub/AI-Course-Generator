@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
+import { toast } from "react-hot-toast";
 
 const Layout = () => {
   const [courseData, setCourseData] = useState(null);
@@ -16,14 +17,13 @@ const Layout = () => {
   const saveCourse = async () => {
     try {
       await axiosInstance.post("/api/saveCourse", courseData);
-
-
+      toast.success("Course saved successfully!");
       localStorage.removeItem("courseData");
       localStorage.setItem("showLayout", "false");
-
       navigate("/viewcourse");
     } catch (error) {
       console.error("Error saving course:", error);
+      toast.error("Failed to save course.");
     }
   };
 

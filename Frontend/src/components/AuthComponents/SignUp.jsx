@@ -1,5 +1,6 @@
 import axiosInstance from "../../utils/axiosInstance";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 
 function SignUp({ toggleAuthMode }) {
   const [formData, setFormData] = useState({
@@ -18,9 +19,7 @@ function SignUp({ toggleAuthMode }) {
     e.preventDefault();
     try {
       const response = await axiosInstance.post("/auth/register", formData);
-
-
-
+      toast.success("Registration successful! Please login.");
       toggleAuthMode();
     } catch (err) {
       const data = err.response?.data;
@@ -34,6 +33,7 @@ function SignUp({ toggleAuthMode }) {
 
       console.error("Sign-up Error:", errorMessage);
       setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 

@@ -2,78 +2,58 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../MainComponents/NavBar";
 import Footer from "../MainComponents/Footer";
-import Cookies from "js-cookie";
 import axiosInstance from "../../utils/axiosInstance";
+import { useUser } from "../../context/UserContext";
+import { toast } from "react-hot-toast";
 
 const CourseView = () => {
-  const [user, setUser] = useState(null);
+  const { user } = useUser();
   const [courses, setCourses] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isCoursesLoading, setIsCoursesLoading] = useState(true);
+  const [courseToDelete, setCourseToDelete] = useState(null);
   const navigate = useNavigate();
 
-  const decodeJWT = (token) => {
-    const payload = token.split('.')[1];
-    const decodedPayload = atob(payload);
-    return JSON.parse(decodedPayload);
-  };
-
   useEffect(() => {
-    const token = Cookies.get("jwt");
-
-    if (token) {
-      try {
-        const decodedToken = decodeJWT(token);
-        const userId = decodedToken?.userId;
-
-        if (userId) {
-          axiosInstance.get(`/api/getUser?id=${userId}`)
-            .then((res) => {
-              setUser(res.data);
-              setIsLoading(false);
-            })
-            .catch((error) => {
-              console.error("Error fetching user data:", error);
-              setIsLoading(false);
-            });
-
-          axiosInstance.get(`/api/getCourse/${userId}`)
-            .then((res) => {
-              if (res.data && res.data.length > 0) {
-                setCourses(res.data);
-              }
-            })
-            .catch((error) => {
-              console.error("Error fetching courses:", error);
-            });
-        }
-      } catch (error) {
-        console.error("Error decoding token:", error);
-        setIsLoading(false);
-      }
+    if (user?._id) {
+      axiosInstance.get(`/api/getCourse/${user._id}`)
+        .then((res) => {
+          if (res.data && res.data.length > 0) {
+            setCourses(res.data);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching courses:", error);
+        })
+        .finally(() => {
+          setIsCoursesLoading(false);
+        });
     }
-  }, []);
+  }, [user]);
 
   const handleGenerateCourse = (course) => {
     navigate("/viewlayout", { state: { course } });
   };
 
-  const handleDeleteCourse = async (courseId) => {
+  const confirmDeleteCourse = async () => {
+    if (!courseToDelete) return;
     try {
-      const response = await axiosInstance.delete(`/api/deleteCourse/${courseId}`);
+      const response = await axiosInstance.delete(`/api/deleteCourse/${courseToDelete}`);
 
       if (response.status === 200) {
-        alert("Course Deleted");
+        toast.success("Course Deleted Locally");
         const res = await axiosInstance.get(`/api/getCourse/${user?._id}`);
-        setCourses(res.data);
+        setCourses(res.data || []);
+        setCourseToDelete(null);
       } else {
-        console.error("Failed to delete course");
+        toast.error("Failed to delete course");
       }
     } catch (error) {
       console.error("Error deleting course:", error);
+      toast.error("Error deleting course");
     }
   };
 
-  if (isLoading) return <p className="text-center text-xl font-semibold">Loading...</p>;
+  if (isCoursesLoading) return <p className="text-center text-xl font-semibold mt-32">Loading...</p>;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -110,10 +90,10 @@ const CourseView = () => {
                   </button>
                   <button
                     className="btn btn-ghost text-red-400 hover:text-red-600 hover:bg-red-50"
-                    onClick={() => handleDeleteCourse(course._id)}
+                    onClick={() => setCourseToDelete(course._id)}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1-1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                     </svg>
                   </button>
                 </div>
@@ -129,6 +109,30 @@ const CourseView = () => {
             >
               Generate Your First Course
             </button>
+          </div>
+        )}
+
+        {courseToDelete && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex justify-center items-center z-[110] p-6 animate-in fade-in duration-300">
+            <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl w-full max-w-sm text-center animate-in zoom-in-95 duration-300 border border-slate-100">
+              <div className="w-20 h-20 bg-error/10 text-error rounded-3xl flex items-center justify-center text-4xl mb-6 mx-auto">🗑️</div>
+              <h3 className="text-2xl font-black text-slate-900 mb-2">Delete Path?</h3>
+              <p className="text-slate-500 mb-8 text-sm">This will remove this private course from your learning dashboard. Any version you've published to the community will remain active.</p>
+              <div className="flex gap-3">
+                <button 
+                  className="btn btn-ghost flex-1 rounded-2xl font-bold"
+                  onClick={() => setCourseToDelete(null)}
+                >
+                  Keep It
+                </button>
+                <button 
+                  className="btn btn-error flex-1 rounded-2xl font-bold text-white shadow-lg shadow-error/20"
+                  onClick={confirmDeleteCourse}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

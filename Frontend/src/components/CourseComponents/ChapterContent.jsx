@@ -4,6 +4,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import NavBar from "../MainComponents/NavBar";
 import Footer from "../MainComponents/Footer";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 const ChapterContent = () => {
   const location = useLocation();
@@ -65,11 +66,13 @@ const ChapterContent = () => {
           detailedContent: newContent,
           videos: newVideos
         });
+        toast.success("Content generated and saved!");
       }
 
     } catch (err) {
       setError("Error generating content. Please try again.");
       console.error("Error generating content:", err);
+      toast.error("Error generating content.");
     } finally {
       setLoading(false);
     }
@@ -90,6 +93,7 @@ const ChapterContent = () => {
     } catch (err) {
       setError("Error generating quiz. Please try again.");
       console.error("Error generating quiz:", err);
+      toast.error("Error generating quiz.");
     } finally {
       setLoading(false);
     }
@@ -278,7 +282,10 @@ const ChapterContent = () => {
                         </pre>
                         <button
                           className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-600 text-white text-xs px-2 py-1 rounded"
-                          onClick={() => navigator.clipboard.writeText(item.code)}
+                          onClick={() => {
+                            navigator.clipboard.writeText(item.code);
+                            toast.success("Code copied!");
+                          }}
                         >
                           Copy
                         </button>

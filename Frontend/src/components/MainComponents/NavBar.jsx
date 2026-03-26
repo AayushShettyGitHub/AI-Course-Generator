@@ -1,48 +1,17 @@
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { Link, useNavigate } from 'react-router-dom';
-import axiosInstance from '../../utils/axiosInstance';
+import { useUser } from '../../context/UserContext';
 
 function NavBar() {
   const navigate = useNavigate();
-  const [updatedUser, setUpdatedUser] = useState(null);
-
-  const decodeJWT = (token) => {
-    const payload = token.split('.')[1];
-    const decodedPayload = atob(payload);
-    return JSON.parse(decodedPayload);
-  };
+  const { user: updatedUser } = useUser();
 
   const handleLogout = () => {
     Cookies.remove("jwt");
     console.log("User logged out successfully");
     navigate("/login");
   };
-
-  useEffect(() => {
-    const token = Cookies.get("jwt");
-
-    if (token) {
-      try {
-        const decodedToken = decodeJWT(token);
-        const userId = decodedToken?.userId;
-
-        if (userId) {
-          axiosInstance.get(`/api/getUser?id=${userId}`)
-            .then((res) => {
-              if (res.data) {
-                setUpdatedUser(res.data);
-              }
-            })
-            .catch((error) => {
-              console.error("Error fetching user data:", error);
-            });
-        }
-      } catch (error) {
-        console.error("Error decoding token:", error);
-      }
-    }
-  }, []);
 
   return (
     <div className="navbar bg-base-100 z-[50] w-full fixed top-0 shadow-md">

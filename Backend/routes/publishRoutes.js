@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { actionLimiter } = require("../middleware/rateLimit");
 
 module.exports = (io) => {
   const publish = require("../Controller/publish")(io);
@@ -8,8 +9,8 @@ module.exports = (io) => {
   router.get("/courses/mine", publish.getCoursesByCurrentUser);
   router.post("/courses/add", publish.publishCourse);
   router.post("/courses/updateChapter", publish.updatePublishedChapter);
-  router.post("/courses/view", publish.incrementViews);
-  router.post("/courses/rate", publish.rateCourse);
+  router.post("/courses/view", actionLimiter, publish.incrementViews);
+  router.post("/courses/rate", actionLimiter, publish.rateCourse);
   router.delete("/courses/delete/:courseId", publish.deleteCourse);
 
   return router;
