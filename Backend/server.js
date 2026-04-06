@@ -22,6 +22,10 @@ const io = new Server(server, {
   },
 });
 
+app.get('/health', (req, res) => {
+  res.status(200).json({ message: 'Server is healthy' });
+});
+
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 app.use(cors({ origin: allowedOrigins, credentials: true }));
